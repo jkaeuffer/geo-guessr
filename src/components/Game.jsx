@@ -4,9 +4,12 @@ import ContinentProgress from "./ContinentProgress";
 import CountryHintModal from "./CountryHintModal";
 import EndGameModal from "./EndGameModal";
 import Timer from "./Timer";
+import LanguageSelector from "./LanguageSelector";
 import { findCountry, countries } from "../data/countries";
+import { useLanguage } from "../i18n/LanguageContext";
 
 function Game() {
+  const { t, getCountryName, language } = useLanguage();
   const [guessedCountries, setGuessedCountries] = useState(new Set());
   const [hintsUsed, setHintsUsed] = useState(new Set());
   const [inputValue, setInputValue] = useState("");
@@ -44,14 +47,14 @@ function Game() {
         setIsTimerRunning(true);
       }
 
-      const country = findCountry(trimmedInput);
+      const country = findCountry(trimmedInput, language);
 
       if (country) {
         if (guessedCountries.has(country.code)) {
-          setLastGuessStatus({ type: "duplicate", name: country.name });
+          setLastGuessStatus({ type: "duplicate", name: getCountryName(country.code) });
         } else {
           setGuessedCountries((prev) => new Set([...prev, country.code]));
-          setLastGuessStatus({ type: "correct", name: country.name });
+          setLastGuessStatus({ type: "correct", name: getCountryName(country.code) });
         }
       } else {
         setLastGuessStatus({ type: "wrong", input: trimmedInput });
@@ -60,7 +63,7 @@ function Game() {
 
       setInputValue("");
     },
-    [inputValue, isTimerRunning, guessedCountries]
+    [inputValue, isTimerRunning, guessedCountries, language, getCountryName]
   );
 
   const handleCountryClick = (countryCode) => {
@@ -95,8 +98,9 @@ function Game() {
 
   return (
     <div className="game">
+      <LanguageSelector />
       <header className="game-header">
-          <h1>🌍 Country Guesser</h1>
+          <h1>{t.appTitle}</h1>
           <div className="header-stats">
             <Timer time={time} isRunning={isTimerRunning} />
             <div className="score">
@@ -106,7 +110,7 @@ function Game() {
         </header>
 
         <p className="welcome-text">
-          Welcome! Try to guess as many countries as possible. Type a country name below to start the timer. Click on any country on the map for a hint!
+          {t.welcomeText}
         </p>
 
       <div className="game-controls">
@@ -116,32 +120,32 @@ function Game() {
             type="text"
             value={inputValue}
             onChange={handleInputChange}
-            placeholder="Enter a country name..."
+            placeholder={t.inputPlaceholder}
             className={`guess-input ${lastGuessStatus?.type || ""}`}
             autoFocus
           />
           <button type="submit" className="btn btn-guess">
-            Guess
+            {t.guessButton}
           </button>
           <button
             type="button"
             className="btn btn-end"
             onClick={handleEndGame}
           >
-            End Game
+            {t.endGameButton}
           </button>
         </form>
 
         {lastGuessStatus && (
           <div className={`guess-feedback ${lastGuessStatus.type}`}>
             {lastGuessStatus.type === "correct" && (
-              <>✓ Correct! {lastGuessStatus.name}</>
+              <>✓ {t.correct} {lastGuessStatus.name}</>
             )}
             {lastGuessStatus.type === "wrong" && (
-              <>✗ Wrong! "{lastGuessStatus.input}" (+5s penalty)</>
+              <>✗ {t.wrong} "{lastGuessStatus.input}" {t.penaltyNote}</>
             )}
             {lastGuessStatus.type === "duplicate" && (
-              <>⚠ Already guessed: {lastGuessStatus.name}</>
+              <>⚠ {t.alreadyGuessed} {lastGuessStatus.name}</>
             )}
           </div>
         )}

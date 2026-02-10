@@ -1,6 +1,8 @@
 import { getCountryByCode } from "../data/countries";
+import { useLanguage } from "../i18n/LanguageContext";
 
 function CountryHintModal({ countryCode, onClose }) {
+  const { t, getCountryCapital, getContinentName } = useLanguage();
   const country = getCountryByCode(countryCode);
 
   if (!country) return null;
@@ -13,7 +15,7 @@ function CountryHintModal({ countryCode, onClose }) {
         <button className="modal-close" onClick={onClose}>
           ×
         </button>
-        <h2>Country Hint</h2>
+        <h2>{t.countryHint}</h2>
         <div className="hint-content">
           <img
             src={flagUrl}
@@ -25,14 +27,14 @@ function CountryHintModal({ countryCode, onClose }) {
           />
           <div className="hint-info">
             <p>
-              <strong>Capital:</strong> {country.capital}
+              <strong>{t.capital}</strong> {getCountryCapital(countryCode)}
             </p>
             <p>
-              <strong>Continent:</strong> {country.continent}
+              <strong>{t.continent}</strong> {getContinentName(country.continent)}
             </p>
           </div>
         </div>
-        <p className="hint-note">Can you guess this country?</p>
+        <p className="hint-note">{t.hintNote}</p>
       </div>
     </div>
   );

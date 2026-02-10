@@ -268,10 +268,60 @@ const getSimilarity = (str1, str2) => {
   return 1 - distance / maxLength;
 };
 
-export const findCountry = (input) => {
+// Import French country translations
+import { countryTranslations } from "../i18n/translations";
+
+const frenchCountryData = countryTranslations.fr;
+
+export const findCountry = (input, language = "en") => {
   const normalizedInput = input.toLowerCase().trim();
 
-  // First, try exact match
+  if (language === "fr") {
+    // Try to match French names
+    for (const country of countries) {
+      const frData = frenchCountryData[country.code];
+      if (frData) {
+        if (frData.name.toLowerCase() === normalizedInput) {
+          return country;
+        }
+        if (frData.aliases.some((a) => a.toLowerCase() === normalizedInput)) {
+          return country;
+        }
+      }
+    }
+
+    // Fuzzy matching for French
+    const SIMILARITY_THRESHOLD = 0.75;
+    const MIN_INPUT_LENGTH = 3;
+
+    if (normalizedInput.length >= MIN_INPUT_LENGTH) {
+      let bestMatch = null;
+      let bestSimilarity = 0;
+
+      for (const country of countries) {
+        const frData = frenchCountryData[country.code];
+        if (frData) {
+          const nameSimilarity = getSimilarity(normalizedInput, frData.name.toLowerCase());
+          if (nameSimilarity > bestSimilarity && nameSimilarity >= SIMILARITY_THRESHOLD) {
+            bestSimilarity = nameSimilarity;
+            bestMatch = country;
+          }
+
+          for (const alias of frData.aliases) {
+            const aliasSimilarity = getSimilarity(normalizedInput, alias.toLowerCase());
+            if (aliasSimilarity > bestSimilarity && aliasSimilarity >= SIMILARITY_THRESHOLD) {
+              bestSimilarity = aliasSimilarity;
+              bestMatch = country;
+            }
+          }
+        }
+      }
+
+      if (bestMatch) return bestMatch;
+    }
+  }
+
+  // English matching (default)
   const exactMatch = countries.find(
     (c) =>
       c.name.toLowerCase() === normalizedInput ||
@@ -281,8 +331,8 @@ export const findCountry = (input) => {
   if (exactMatch) return exactMatch;
 
   // If no exact match, try fuzzy matching
-  const SIMILARITY_THRESHOLD = 0.75; // 75% similarity required
-  const MIN_INPUT_LENGTH = 3; // Require at least 3 characters for fuzzy matching
+  const SIMILARITY_THRESHOLD = 0.75;
+  const MIN_INPUT_LENGTH = 3;
 
   if (normalizedInput.length < MIN_INPUT_LENGTH) return null;
 
@@ -290,7 +340,6 @@ export const findCountry = (input) => {
   let bestSimilarity = 0;
 
   for (const country of countries) {
-    // Check country name
     const nameSimilarity = getSimilarity(
       normalizedInput,
       country.name.toLowerCase()
@@ -300,7 +349,6 @@ export const findCountry = (input) => {
       bestMatch = country;
     }
 
-    // Check aliases
     for (const alias of country.aliases) {
       const aliasSimilarity = getSimilarity(
         normalizedInput,

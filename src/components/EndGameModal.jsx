@@ -1,6 +1,9 @@
 import { continents, getCountriesByContinent } from "../data/countries";
+import { useLanguage } from "../i18n/LanguageContext";
 
 function EndGameModal({ guessedCountries, totalTime, onClose, onRestart }) {
+  const { t, getCountryName, getContinentName } = useLanguage();
+
   const getMissedCountries = () => {
     const missed = [];
     continents.forEach((continent) => {
@@ -35,29 +38,29 @@ function EndGameModal({ guessedCountries, totalTime, onClose, onRestart }) {
   return (
     <div className="modal-overlay">
       <div className="modal-content end-game-modal">
-        <h2>Game Over!</h2>
+        <h2>{t.gameOver}</h2>
         <div className="game-stats">
           <div className="stat">
             <span className="stat-value">{guessedCount}</span>
-            <span className="stat-label">Countries Found</span>
+            <span className="stat-label">{t.countriesFound}</span>
           </div>
           <div className="stat">
             <span className="stat-value">{missedCount}</span>
-            <span className="stat-label">Countries Missed</span>
+            <span className="stat-label">{t.countriesMissed}</span>
           </div>
           <div className="stat">
             <span className="stat-value">{formatTime(totalTime)}</span>
-            <span className="stat-label">Total Time</span>
+            <span className="stat-label">{t.totalTime}</span>
           </div>
         </div>
 
         {missedByContinent.length > 0 && (
           <div className="missed-countries">
-            <h3>Missed Countries</h3>
+            <h3>{t.missedCountries}</h3>
             <div className="missed-list">
               {missedByContinent.map(({ continent, countries }) => (
                 <div key={continent} className="missed-continent">
-                  <h4>{continent}</h4>
+                  <h4>{getContinentName(continent)}</h4>
                   <div className="missed-country-list">
                     {countries.map((country) => (
                       <span key={country.code} className="missed-country">
@@ -66,7 +69,7 @@ function EndGameModal({ guessedCountries, totalTime, onClose, onRestart }) {
                           alt=""
                           className="mini-flag"
                         />
-                        {country.name}
+                        {getCountryName(country.code)}
                       </span>
                     ))}
                   </div>
@@ -78,10 +81,10 @@ function EndGameModal({ guessedCountries, totalTime, onClose, onRestart }) {
 
         <div className="modal-actions">
           <button className="btn btn-primary" onClick={onRestart}>
-            Play Again
+            {t.playAgain}
           </button>
           <button className="btn btn-secondary" onClick={onClose}>
-            Close
+            {t.close}
           </button>
         </div>
       </div>

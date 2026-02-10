@@ -1,6 +1,9 @@
 import { continents, getCountriesByContinent, continentColors } from "../data/countries";
+import { useLanguage } from "../i18n/LanguageContext";
 
 function ContinentProgress({ guessedCountries }) {
+  const { getContinentName } = useLanguage();
+
   const getContinentProgress = (continent) => {
     const countriesInContinent = getCountriesByContinent(continent);
     const guessedInContinent = countriesInContinent.filter((c) =>
@@ -23,7 +26,7 @@ function ContinentProgress({ guessedCountries }) {
         return (
           <div key={continent} className="continent-progress">
             <div className="continent-label">
-              <span className="continent-name">{continent}</span>
+              <span className="continent-name">{getContinentName(continent)}</span>
               <span className="continent-count">
                 {progress.guessed}/{progress.total}
               </span>
