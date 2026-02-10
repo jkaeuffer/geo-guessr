@@ -96,14 +96,18 @@ function Game() {
   return (
     <div className="game">
       <header className="game-header">
-        <h1>🌍 Country Guesser</h1>
-        <div className="header-stats">
-          <Timer time={time} isRunning={isTimerRunning} />
-          <div className="score">
-            {guessedCount} / {totalCountries}
+          <h1>🌍 Country Guesser</h1>
+          <div className="header-stats">
+            <Timer time={time} isRunning={isTimerRunning} />
+            <div className="score">
+              {guessedCount} / {totalCountries}
+            </div>
           </div>
-        </div>
-      </header>
+        </header>
+
+        <p className="welcome-text">
+          Welcome! Try to guess as many countries as possible. Type a country name below to start the timer. Click on any country on the map for a hint!
+        </p>
 
       <div className="game-controls">
         <form onSubmit={handleSubmit} className="guess-form">
