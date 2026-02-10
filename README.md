@@ -17,6 +17,11 @@ A fun geography quiz game where you try to name all the countries in the world a
 - **5-second penalty** for wrong guesses
 - **Fuzzy matching** - minor typos are accepted (thanks to Levenshtein distance algorithm)
 
+### 🌐 Multilingual Support
+- **English & French** - toggle between languages using the flag buttons in the top right
+- **Fully translated** - all country names, capitals, continents, and UI text
+- **Type in your language** - enter country names in English or French depending on selected language
+
 ### 🗺️ Map Features
 - **Zoom & pan** - scroll to zoom, drag to pan around the map
 - **Color-coded continents** - each continent has its own color
@@ -100,9 +105,13 @@ geo-guessr/
 │   │   ├── ContinentProgress.jsx  # Progress bars
 │   │   ├── CountryHintModal.jsx   # Hint popup
 │   │   ├── EndGameModal.jsx   # Final score screen
+│   │   ├── LanguageSelector.jsx   # Language toggle (EN/FR)
 │   │   └── Timer.jsx          # Game timer
 │   ├── data/
 │   │   └── countries.js       # Country data & fuzzy matching
+│   ├── i18n/
+│   │   ├── LanguageContext.jsx    # Language state provider
+│   │   └── translations.js    # UI text & country translations
 │   ├── App.jsx
 │   ├── App.css
 │   └── main.jsx
