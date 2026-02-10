@@ -1,0 +1,533 @@
+* {
+  box-sizing: border-box;
+}
+
+.game {
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: 20px;
+  min-height: 100vh;
+}
+
+.game-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+  flex-wrap: wrap;
+  gap: 15px;
+}
+
+.game-header h1 {
+  margin: 0;
+  font-size: 2rem;
+  color: #fff;
+}
+
+.header-stats {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+}
+
+.timer {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 1.5rem;
+  font-weight: bold;
+  color: #fff;
+  background: #333;
+  padding: 8px 16px;
+  border-radius: 8px;
+}
+
+.timer.running {
+  background: #27ae60;
+}
+
+.timer-icon {
+  font-size: 1.2rem;
+}
+
+.score {
+  font-size: 1.5rem;
+  font-weight: bold;
+  color: #3498db;
+  background: #1a1a2e;
+  padding: 8px 16px;
+  border-radius: 8px;
+}
+
+.game-controls {
+  margin-bottom: 20px;
+}
+
+.guess-form {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.guess-input {
+  flex: 1;
+  min-width: 250px;
+  padding: 15px 20px;
+  font-size: 1.2rem;
+  border: 3px solid #444;
+  border-radius: 10px;
+  background: #1a1a2e;
+  color: #fff;
+  outline: none;
+  transition: border-color 0.3s, box-shadow 0.3s;
+}
+
+.guess-input:focus {
+  border-color: #3498db;
+  box-shadow: 0 0 10px rgba(52, 152, 219, 0.3);
+}
+
+.guess-input.correct {
+  border-color: #27ae60;
+  box-shadow: 0 0 10px rgba(39, 174, 96, 0.3);
+}
+
+.guess-input.wrong {
+  border-color: #e74c3c;
+  box-shadow: 0 0 10px rgba(231, 76, 60, 0.3);
+}
+
+.guess-input.duplicate {
+  border-color: #f39c12;
+  box-shadow: 0 0 10px rgba(243, 156, 18, 0.3);
+}
+
+.btn {
+  padding: 15px 25px;
+  font-size: 1rem;
+  font-weight: 600;
+  border: none;
+  border-radius: 10px;
+  cursor: pointer;
+  transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+}
+
+.btn:active {
+  transform: translateY(0);
+}
+
+.btn-guess {
+  background: linear-gradient(135deg, #3498db, #2980b9);
+  color: #fff;
+}
+
+.btn-end {
+  background: linear-gradient(135deg, #e74c3c, #c0392b);
+  color: #fff;
+}
+
+.btn-primary {
+  background: linear-gradient(135deg, #27ae60, #219a52);
+  color: #fff;
+}
+
+.btn-secondary {
+  background: #444;
+  color: #fff;
+}
+
+.guess-feedback {
+  margin-top: 10px;
+  padding: 10px 15px;
+  border-radius: 8px;
+  font-weight: 600;
+  animation: fadeIn 0.3s ease;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.guess-feedback.correct {
+  background: rgba(39, 174, 96, 0.2);
+  color: #27ae60;
+  border: 1px solid #27ae60;
+}
+
+.guess-feedback.wrong {
+  background: rgba(231, 76, 60, 0.2);
+  color: #e74c3c;
+  border: 1px solid #e74c3c;
+}
+
+.guess-feedback.duplicate {
+  background: rgba(243, 156, 18, 0.2);
+  color: #f39c12;
+  border: 1px solid #f39c12;
+}
+
+.continent-progress-container {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 15px;
+  margin-bottom: 20px;
+  padding: 15px;
+  background: #1a1a2e;
+  border-radius: 12px;
+}
+
+.continent-progress {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+.continent-label {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 0.9rem;
+}
+
+.continent-name {
+  font-weight: 600;
+  color: #fff;
+}
+
+.continent-count {
+  color: #888;
+  font-size: 0.85rem;
+}
+
+.progress-bar {
+  height: 8px;
+  background: #333;
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+.progress-fill {
+  height: 100%;
+  border-radius: 4px;
+  transition: width 0.3s ease;
+}
+
+.world-map-container {
+  background: #1a1a2e;
+  border-radius: 12px;
+  padding: 20px;
+  overflow: hidden;
+  min-height: 400px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+}
+
+.map-controls {
+  position: absolute;
+  top: 25px;
+  right: 25px;
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  z-index: 10;
+  background: rgba(0, 0, 0, 0.5);
+  padding: 8px 12px;
+  border-radius: 8px;
+}
+
+.map-btn {
+  width: 32px;
+  height: 32px;
+  border: none;
+  background: #3498db;
+  color: #fff;
+  border-radius: 6px;
+  font-size: 1.2rem;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.2s;
+  padding: 0;
+}
+
+.map-btn:hover {
+  background: #2980b9;
+}
+
+.zoom-level {
+  color: #fff;
+  font-size: 0.85rem;
+  min-width: 45px;
+  text-align: center;
+}
+
+.map-loading {
+  color: #888;
+  font-size: 1.2rem;
+  text-align: center;
+}
+
+.world-map {
+  width: 100%;
+  height: auto;
+  max-height: 60vh;
+}
+
+.world-map .country {
+  fill: #2c3e50;
+  stroke: #1a1a2e;
+  stroke-width: 0.3;
+  cursor: pointer;
+  transition: fill 0.3s, transform 0.2s;
+}
+
+.world-map .country:hover {
+  fill: #34495e;
+  filter: brightness(1.2);
+}
+
+.world-map .country.guessed {
+  cursor: default;
+}
+
+.world-map .country.guessed:hover {
+  filter: none;
+}
+
+.world-map .country.hint-used:not(.guessed) {
+  fill: #8e44ad;
+}
+
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.8);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  padding: 20px;
+  animation: fadeIn 0.3s ease;
+}
+
+.modal-content {
+  background: #1a1a2e;
+  border-radius: 16px;
+  padding: 30px;
+  max-width: 600px;
+  width: 100%;
+  max-height: 80vh;
+  overflow-y: auto;
+  position: relative;
+  animation: slideUp 0.3s ease;
+}
+
+@keyframes slideUp {
+  from {
+    opacity: 0;
+    transform: translateY(30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.modal-close {
+  position: absolute;
+  top: 15px;
+  right: 15px;
+  background: none;
+  border: none;
+  font-size: 2rem;
+  color: #888;
+  cursor: pointer;
+  padding: 0;
+  line-height: 1;
+}
+
+.modal-close:hover {
+  color: #fff;
+}
+
+.modal-content h2 {
+  margin: 0 0 20px;
+  color: #fff;
+  text-align: center;
+}
+
+.hint-modal .hint-content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 20px;
+}
+
+.country-flag {
+  width: 160px;
+  height: auto;
+  border-radius: 8px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+}
+
+.hint-info {
+  text-align: center;
+}
+
+.hint-info p {
+  margin: 10px 0;
+  font-size: 1.1rem;
+  color: #fff;
+}
+
+.hint-note {
+  text-align: center;
+  color: #888;
+  font-style: italic;
+  margin-top: 20px;
+}
+
+.end-game-modal h2 {
+  font-size: 2rem;
+  margin-bottom: 25px;
+}
+
+.game-stats {
+  display: flex;
+  justify-content: center;
+  gap: 30px;
+  margin-bottom: 30px;
+  flex-wrap: wrap;
+}
+
+.stat {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  background: #242438;
+  padding: 20px 30px;
+  border-radius: 12px;
+}
+
+.stat-value {
+  font-size: 2.5rem;
+  font-weight: bold;
+  color: #3498db;
+}
+
+.stat-label {
+  font-size: 0.9rem;
+  color: #888;
+  margin-top: 5px;
+}
+
+.missed-countries {
+  margin-top: 20px;
+}
+
+.missed-countries h3 {
+  color: #e74c3c;
+  margin-bottom: 15px;
+  text-align: center;
+}
+
+.missed-list {
+  max-height: 300px;
+  overflow-y: auto;
+}
+
+.missed-continent {
+  margin-bottom: 20px;
+}
+
+.missed-continent h4 {
+  color: #f39c12;
+  margin: 0 0 10px;
+  font-size: 1rem;
+  border-bottom: 1px solid #333;
+  padding-bottom: 5px;
+}
+
+.missed-country-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.missed-country {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  background: #242438;
+  padding: 6px 12px;
+  border-radius: 6px;
+  font-size: 0.85rem;
+  color: #ccc;
+}
+
+.mini-flag {
+  width: 20px;
+  height: auto;
+  border-radius: 2px;
+}
+
+.modal-actions {
+  display: flex;
+  justify-content: center;
+  gap: 15px;
+  margin-top: 25px;
+}
+
+@media (max-width: 768px) {
+  .game-header {
+    flex-direction: column;
+    text-align: center;
+  }
+
+  .game-header h1 {
+    font-size: 1.5rem;
+  }
+
+  .guess-form {
+    flex-direction: column;
+  }
+
+  .guess-input {
+    min-width: 100%;
+  }
+
+  .btn {
+    width: 100%;
+  }
+
+  .game-stats {
+    gap: 15px;
+  }
+
+  .stat {
+    padding: 15px 20px;
+  }
+
+  .stat-value {
+    font-size: 1.8rem;
+  }
+}
