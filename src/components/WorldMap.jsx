@@ -1,5 +1,5 @@
 import { useEffect, useState, useRef } from "react";
-import { getCountryByCode, continentColors } from "../data/countries";
+import { getCountryByCode, continentColors, dependencies } from "../data/countries";
 
 const WORLD_MAP_URL = "https://cdn.jsdelivr.net/npm/world-atlas@2/countries-110m.json";
 
@@ -66,7 +66,41 @@ const numericToAlpha2 = {
     "760": "SY", "158": "TW", "762": "TJ", "834": "TZ", "764": "TH", "626": "TL", "768": "TG",
     "776": "TO", "780": "TT", "788": "TN", "792": "TR", "795": "TM", "798": "TV", "800": "UG",
     "804": "UA", "784": "AE", "826": "GB", "840": "US", "858": "UY", "860": "UZ", "548": "VU",
-    "862": "VE", "704": "VN", "887": "YE", "894": "ZM", "716": "ZW", "-99": "XK"
+    "862": "VE", "704": "VN", "887": "YE", "894": "ZM", "716": "ZW", "-99": "XK",
+    // Dependencies and territories
+    "304": "GL", // Greenland
+    "630": "PR", // Puerto Rico
+    "316": "GU", // Guam
+    "850": "VI", // US Virgin Islands
+    "16": "AS",  // American Samoa
+    "580": "MP", // Northern Mariana Islands
+    "254": "GF", // French Guiana
+    "312": "GP", // Guadeloupe
+    "474": "MQ", // Martinique
+    "638": "RE", // Réunion
+    "175": "YT", // Mayotte
+    "258": "PF", // French Polynesia
+    "540": "NC", // New Caledonia
+    "663": "MF", // Saint Martin
+    "652": "BL", // Saint Barthélemy
+    "876": "WF", // Wallis and Futuna
+    "60": "BM",  // Bermuda
+    "136": "KY", // Cayman Islands
+    "92": "VG",  // British Virgin Islands
+    "796": "TC", // Turks and Caicos Islands
+    "660": "AI", // Anguilla
+    "500": "MS", // Montserrat
+    "238": "FK", // Falkland Islands
+    "292": "GI", // Gibraltar
+    "533": "AW", // Aruba
+    "531": "CW", // Curaçao
+    "534": "SX", // Sint Maarten
+    "344": "HK", // Hong Kong
+    "446": "MO", // Macau
+    "234": "FO", // Faroe Islands
+    "184": "CK", // Cook Islands
+    "570": "NU", // Niue
+    "744": "SJ"  // Svalbard
   };
 
   // Helper function to convert numeric ID to alpha-2 code
@@ -255,15 +289,29 @@ const numericToAlpha2 = {
           const numericCode = feature.id;
           const countryCode = numericToAlpha2Code(numericCode);
           const countryData = countryCode ? getCountryByCode(countryCode) : null;
+
+          // Check if this is a dependency
+          const dependencyData = countryCode ? dependencies.find(d => d.code === countryCode) : null;
+
           const isGuessed = countryCode && guessedCountries.has(countryCode);
           const isActiveHint = countryCode && activeHintCountry === countryCode;
           const isValidCountry = !!countryData;
           const pathD = geoToPath(feature.geometry);
 
-          // Get continent color for guessed countries
-          const fillColor = isGuessed && countryData
-            ? continentColors[countryData.continent]
-            : undefined;
+          // Get continent color for guessed countries or dependencies
+          let fillColor = undefined;
+          if (isGuessed) {
+            if (countryData) {
+              // Regular country - use its continent color
+              fillColor = continentColors[countryData.continent];
+            } else if (dependencyData) {
+              // Dependency - use parent country's continent color
+              const parentCountry = getCountryByCode(dependencyData.parentCode);
+              if (parentCountry) {
+                fillColor = continentColors[parentCountry.continent];
+              }
+            }
+          }
 
           return (
             <path

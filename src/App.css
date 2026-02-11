@@ -142,6 +142,11 @@
   box-shadow: 0 0 10px rgba(39, 174, 96, 0.3);
 }
 
+.guess-input.correct-with-deps {
+  border-color: #27ae60;
+  box-shadow: 0 0 10px rgba(39, 174, 96, 0.3);
+}
+
 .guess-input.wrong {
   border-color: #e74c3c;
   box-shadow: 0 0 10px rgba(231, 76, 60, 0.3);
@@ -150,6 +155,11 @@
 .guess-input.duplicate {
   border-color: #f39c12;
   box-shadow: 0 0 10px rgba(243, 156, 18, 0.3);
+}
+
+.guess-input.dependency {
+  border-color: #9b59b6;
+  box-shadow: 0 0 10px rgba(155, 89, 182, 0.3);
 }
 
 .btn {
@@ -191,12 +201,19 @@
   color: #fff;
 }
 
-.guess-feedback {
+.guess-feedback-container {
+  min-height: 60px;
   margin-top: 10px;
+  display: flex;
+  align-items: flex-start;
+}
+
+.guess-feedback {
   padding: 10px 15px;
   border-radius: 8px;
   font-weight: 600;
   animation: fadeIn 0.3s ease;
+  width: 100%;
 }
 
 @keyframes fadeIn {
@@ -216,6 +233,12 @@
   border: 1px solid #27ae60;
 }
 
+.guess-feedback.correct-with-deps {
+  background: rgba(39, 174, 96, 0.2);
+  color: #27ae60;
+  border: 1px solid #27ae60;
+}
+
 .guess-feedback.wrong {
   background: rgba(231, 76, 60, 0.2);
   color: #e74c3c;
@@ -226,6 +249,12 @@
   background: rgba(243, 156, 18, 0.2);
   color: #f39c12;
   border: 1px solid #f39c12;
+}
+
+.guess-feedback.dependency {
+  background: rgba(155, 89, 182, 0.2);
+  color: #9b59b6;
+  border: 1px solid #9b59b6;
 }
 
 .continent-progress-container {

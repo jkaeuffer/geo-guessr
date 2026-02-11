@@ -5,7 +5,7 @@ import CountryHintModal from "./CountryHintModal";
 import EndGameModal from "./EndGameModal";
 import Timer from "./Timer";
 import LanguageSelector from "./LanguageSelector";
-import { findCountry, countries } from "../data/countries";
+import { findCountry, countries, findDependency, getDependenciesForCountry } from "../data/countries";
 import { useLanguage } from "../i18n/LanguageContext";
 
 function Game() {
@@ -18,8 +18,10 @@ function Game() {
   const [hintCountryCode, setHintCountryCode] = useState(null);
   const [showEndModal, setShowEndModal] = useState(false);
   const [lastGuessStatus, setLastGuessStatus] = useState(null);
+  const [canClearStatus, setCanClearStatus] = useState(true);
   const inputRef = useRef(null);
   const timerRef = useRef(null);
+  const statusTimerRef = useRef(null);
 
   useEffect(() => {
     if (isTimerRunning) {
@@ -29,12 +31,19 @@ function Game() {
     } else {
       clearInterval(timerRef.current);
     }
-    return () => clearInterval(timerRef.current);
+    return () => {
+      clearInterval(timerRef.current);
+      if (statusTimerRef.current) {
+        clearTimeout(statusTimerRef.current);
+      }
+    };
   }, [isTimerRunning]);
 
   const handleInputChange = (e) => {
     setInputValue(e.target.value);
-    setLastGuessStatus(null);
+    if (canClearStatus) {
+      setLastGuessStatus(null);
+    }
   };
 
   const handleSubmit = useCallback(
@@ -42,6 +51,15 @@ function Game() {
       e.preventDefault();
       const trimmedInput = inputValue.trim();
       if (!trimmedInput) return;
+
+      // Clear any existing status timer
+      if (statusTimerRef.current) {
+        clearTimeout(statusTimerRef.current);
+        statusTimerRef.current = null;
+      }
+
+      // Reset the ability to clear status
+      setCanClearStatus(true);
 
       if (!isTimerRunning) {
         setIsTimerRunning(true);
@@ -53,12 +71,47 @@ function Game() {
         if (guessedCountries.has(country.code)) {
           setLastGuessStatus({ type: "duplicate", name: getCountryName(country.code) });
         } else {
-          setGuessedCountries((prev) => new Set([...prev, country.code]));
-          setLastGuessStatus({ type: "correct", name: getCountryName(country.code) });
+          // Add the country and its dependencies to guessed countries
+          const deps = getDependenciesForCountry(country.code);
+          const newGuessed = new Set([...guessedCountries, country.code]);
+
+          // Also add all dependency codes to the guessed set
+          deps.forEach(dep => {
+            newGuessed.add(dep.code);
+          });
+
+          setGuessedCountries(newGuessed);
+
+          if (deps.length > 0) {
+            const depNames = deps.map(d => d.name).join(", ");
+            setLastGuessStatus({
+              type: "correct-with-deps",
+              name: getCountryName(country.code),
+              dependencies: depNames
+            });
+          } else {
+            setLastGuessStatus({ type: "correct", name: getCountryName(country.code) });
+          }
         }
       } else {
-        setLastGuessStatus({ type: "wrong", input: trimmedInput });
-        setTime((prev) => prev + 5);
+        // Check if it's a dependency
+        const dependency = findDependency(trimmedInput, language);
+        if (dependency) {
+          setLastGuessStatus({
+            type: "dependency",
+            name: dependency.name,
+            parentName: dependency.parentName
+          });
+
+          // Prevent clearing the status for 3 seconds to give user time to read
+          setCanClearStatus(false);
+          statusTimerRef.current = setTimeout(() => {
+            setCanClearStatus(true);
+          }, 3000);
+        } else {
+          setLastGuessStatus({ type: "wrong", input: trimmedInput });
+          setTime((prev) => prev + 5);
+        }
       }
 
       setInputValue("");
@@ -86,6 +139,11 @@ function Game() {
     setHintCountryCode(null);
     setShowEndModal(false);
     setLastGuessStatus(null);
+    setCanClearStatus(true);
+    if (statusTimerRef.current) {
+      clearTimeout(statusTimerRef.current);
+      statusTimerRef.current = null;
+    }
     inputRef.current?.focus();
   };
 
@@ -136,19 +194,27 @@ function Game() {
           </button>
         </form>
 
-        {lastGuessStatus && (
-          <div className={`guess-feedback ${lastGuessStatus.type}`}>
-            {lastGuessStatus.type === "correct" && (
-              <>✓ {t.correct} {lastGuessStatus.name}</>
-            )}
-            {lastGuessStatus.type === "wrong" && (
-              <>✗ {t.wrong} "{lastGuessStatus.input}" {t.penaltyNote}</>
-            )}
-            {lastGuessStatus.type === "duplicate" && (
-              <>⚠ {t.alreadyGuessed} {lastGuessStatus.name}</>
-            )}
-          </div>
-        )}
+        <div className="guess-feedback-container">
+          {lastGuessStatus && (
+            <div className={`guess-feedback ${lastGuessStatus.type}`}>
+              {lastGuessStatus.type === "correct" && (
+                <>✓ {t.correct} {lastGuessStatus.name}</>
+              )}
+              {lastGuessStatus.type === "correct-with-deps" && (
+                <>✓ {t.correct} {lastGuessStatus.name} (includes: {lastGuessStatus.dependencies})</>
+              )}
+              {lastGuessStatus.type === "wrong" && (
+                <>✗ {t.wrong} "{lastGuessStatus.input}" {t.penaltyNote}</>
+              )}
+              {lastGuessStatus.type === "duplicate" && (
+                <>⚠ {t.alreadyGuessed} {lastGuessStatus.name}</>
+              )}
+              {lastGuessStatus.type === "dependency" && (
+                <>⚠ {lastGuessStatus.name} is a dependency, not a country. Can you guess the country?</>
+              )}
+            </div>
+          )}
+        </div>
       </div>
 
       <ContinentProgress guessedCountries={guessedCountries} />

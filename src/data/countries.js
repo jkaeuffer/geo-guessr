@@ -40,7 +40,7 @@ export const countries = [
   { name: "Niger", code: "NE", continent: "Africa", capital: "Niamey", aliases: [] },
   { name: "Nigeria", code: "NG", continent: "Africa", capital: "Abuja", aliases: [] },
   { name: "Rwanda", code: "RW", continent: "Africa", capital: "Kigali", aliases: [] },
-  { name: "São Tomé and Príncipe", code: "ST", continent: "Africa", capital: "São Tomé", aliases: ["Sao Tome and Principe", "Sao Tome"] },
+  { name: "São Tomé and Príncipe", code: "ST", continent: "Africa", capital: "São Tomé", aliases: ["Sao Tome and Principe", "Sao Tome", "São Tomé"] },
   { name: "Senegal", code: "SN", continent: "Africa", capital: "Dakar", aliases: [] },
   { name: "Seychelles", code: "SC", continent: "Africa", capital: "Victoria", aliases: [] },
   { name: "Sierra Leone", code: "SL", continent: "Africa", capital: "Freetown", aliases: [] },
@@ -112,7 +112,7 @@ export const countries = [
   { name: "Austria", code: "AT", continent: "Europe", capital: "Vienna", aliases: [] },
   { name: "Belarus", code: "BY", continent: "Europe", capital: "Minsk", aliases: [] },
   { name: "Belgium", code: "BE", continent: "Europe", capital: "Brussels", aliases: [] },
-  { name: "Bosnia and Herzegovina", code: "BA", continent: "Europe", capital: "Sarajevo", aliases: ["Bosnia"] },
+  { name: "Bosnia and Herzegovina", code: "BA", continent: "Europe", capital: "Sarajevo", aliases: ["Bosnia", "Bosnia-Herzegovina"] },
   { name: "Bulgaria", code: "BG", continent: "Europe", capital: "Sofia", aliases: [] },
   { name: "Croatia", code: "HR", continent: "Europe", capital: "Zagreb", aliases: [] },
   { name: "Czech Republic", code: "CZ", continent: "Europe", capital: "Prague", aliases: ["Czechia"] },
@@ -154,7 +154,7 @@ export const countries = [
   { name: "Vatican City", code: "VA", continent: "Europe", capital: "Vatican City", aliases: ["Vatican", "Holy See"] },
 
   // North America
-  { name: "Antigua and Barbuda", code: "AG", continent: "North America", capital: "St. John's", aliases: [] },
+  { name: "Antigua and Barbuda", code: "AG", continent: "North America", capital: "St. John's", aliases: ["Antigua"] },
   { name: "Bahamas", code: "BS", continent: "North America", capital: "Nassau", aliases: ["The Bahamas"] },
   { name: "Barbados", code: "BB", continent: "North America", capital: "Bridgetown", aliases: [] },
   { name: "Belize", code: "BZ", continent: "North America", capital: "Belmopan", aliases: [] },
@@ -162,7 +162,7 @@ export const countries = [
   { name: "Costa Rica", code: "CR", continent: "North America", capital: "San José", aliases: [] },
   { name: "Cuba", code: "CU", continent: "North America", capital: "Havana", aliases: [] },
   { name: "Dominica", code: "DM", continent: "North America", capital: "Roseau", aliases: [] },
-  { name: "Dominican Republic", code: "DO", continent: "North America", capital: "Santo Domingo", aliases: [] },
+  { name: "Dominican Republic", code: "DO", continent: "North America", capital: "Santo Domingo", aliases: ["DR"] },
   { name: "El Salvador", code: "SV", continent: "North America", capital: "San Salvador", aliases: [] },
   { name: "Grenada", code: "GD", continent: "North America", capital: "St. George's", aliases: [] },
   { name: "Guatemala", code: "GT", continent: "North America", capital: "Guatemala City", aliases: [] },
@@ -172,10 +172,10 @@ export const countries = [
   { name: "Mexico", code: "MX", continent: "North America", capital: "Mexico City", aliases: [] },
   { name: "Nicaragua", code: "NI", continent: "North America", capital: "Managua", aliases: [] },
   { name: "Panama", code: "PA", continent: "North America", capital: "Panama City", aliases: [] },
-  { name: "Saint Kitts and Nevis", code: "KN", continent: "North America", capital: "Basseterre", aliases: ["St Kitts and Nevis"] },
+  { name: "Saint Kitts and Nevis", code: "KN", continent: "North America", capital: "Basseterre", aliases: ["St Kitts and Nevis", "St Kitts", "Saint Kitts"] },
   { name: "Saint Lucia", code: "LC", continent: "North America", capital: "Castries", aliases: ["St Lucia"] },
-  { name: "Saint Vincent and the Grenadines", code: "VC", continent: "North America", capital: "Kingstown", aliases: ["St Vincent"] },
-  { name: "Trinidad and Tobago", code: "TT", continent: "North America", capital: "Port of Spain", aliases: [] },
+  { name: "Saint Vincent and the Grenadines", code: "VC", continent: "North America", capital: "Kingstown", aliases: ["St Vincent", "Saint Vincent", "St Vincent and the Grenadines"] },
+  { name: "Trinidad and Tobago", code: "TT", continent: "North America", capital: "Port of Spain", aliases: ["Trinidad"] },
   { name: "United States", code: "US", continent: "North America", capital: "Washington, D.C.", aliases: ["USA", "United States of America", "America"] },
 
   // South America
@@ -199,7 +199,7 @@ export const countries = [
   { name: "Marshall Islands", code: "MH", continent: "Oceania", capital: "Majuro", aliases: [] },
   { name: "Micronesia", code: "FM", continent: "Oceania", capital: "Palikir", aliases: ["Federated States of Micronesia"] },
   { name: "Nauru", code: "NR", continent: "Oceania", capital: "Yaren", aliases: [] },
-  { name: "New Zealand", code: "NZ", continent: "Oceania", capital: "Wellington", aliases: [] },
+  { name: "New Zealand", code: "NZ", continent: "Oceania", capital: "Wellington", aliases: ["NZ"] },
   { name: "Palau", code: "PW", continent: "Oceania", capital: "Ngerulmud", aliases: [] },
   { name: "Papua New Guinea", code: "PG", continent: "Oceania", capital: "Port Moresby", aliases: ["PNG"] },
   { name: "Samoa", code: "WS", continent: "Oceania", capital: "Apia", aliases: [] },
@@ -366,4 +366,95 @@ export const findCountry = (input, language = "en") => {
 
 export const getCountryByCode = (code) => {
   return countries.find((c) => c.code.toLowerCase() === code.toLowerCase());
+};
+
+// Dependencies of countries (territories, overseas regions, etc.)
+export const dependencies = [
+  { name: "Greenland", code: "GL", parentCode: "DK", parentName: "Denmark" },
+  { name: "Svalbard", code: "SJ", parentCode: "NO", parentName: "Norway" },
+  { name: "Guam", code: "GU", parentCode: "US", parentName: "United States" },
+  { name: "Puerto Rico", code: "PR", parentCode: "US", parentName: "United States" },
+  { name: "US Virgin Islands", code: "VI", parentCode: "US", parentName: "United States", aliases: ["Virgin Islands"] },
+  { name: "American Samoa", code: "AS", parentCode: "US", parentName: "United States" },
+  { name: "Northern Mariana Islands", code: "MP", parentCode: "US", parentName: "United States" },
+  { name: "French Guiana", code: "GF", parentCode: "FR", parentName: "France" },
+  { name: "Guadeloupe", code: "GP", parentCode: "FR", parentName: "France" },
+  { name: "Martinique", code: "MQ", parentCode: "FR", parentName: "France" },
+  { name: "Réunion", code: "RE", parentCode: "FR", parentName: "France", aliases: ["Reunion"] },
+  { name: "Mayotte", code: "YT", parentCode: "FR", parentName: "France" },
+  { name: "French Polynesia", code: "PF", parentCode: "FR", parentName: "France" },
+  { name: "New Caledonia", code: "NC", parentCode: "FR", parentName: "France" },
+  { name: "Saint Martin", code: "MF", parentCode: "FR", parentName: "France" },
+  { name: "Saint Barthélemy", code: "BL", parentCode: "FR", parentName: "France", aliases: ["Saint Barthelemy", "St Barts"] },
+  { name: "Wallis and Futuna", code: "WF", parentCode: "FR", parentName: "France" },
+  { name: "Bermuda", code: "BM", parentCode: "GB", parentName: "United Kingdom" },
+  { name: "Cayman Islands", code: "KY", parentCode: "GB", parentName: "United Kingdom" },
+  { name: "British Virgin Islands", code: "VG", parentCode: "GB", parentName: "United Kingdom" },
+  { name: "Turks and Caicos Islands", code: "TC", parentCode: "GB", parentName: "United Kingdom" },
+  { name: "Anguilla", code: "AI", parentCode: "GB", parentName: "United Kingdom" },
+  { name: "Montserrat", code: "MS", parentCode: "GB", parentName: "United Kingdom" },
+  { name: "Falkland Islands", code: "FK", parentCode: "GB", parentName: "United Kingdom" },
+  { name: "Gibraltar", code: "GI", parentCode: "GB", parentName: "United Kingdom" },
+  { name: "Aruba", code: "AW", parentCode: "NL", parentName: "Netherlands" },
+  { name: "Curaçao", code: "CW", parentCode: "NL", parentName: "Netherlands", aliases: ["Curacao"] },
+  { name: "Sint Maarten", code: "SX", parentCode: "NL", parentName: "Netherlands" },
+  { name: "Hong Kong", code: "HK", parentCode: "CN", parentName: "China" },
+  { name: "Macau", code: "MO", parentCode: "CN", parentName: "China" },
+  { name: "Faroe Islands", code: "FO", parentCode: "DK", parentName: "Denmark" },
+  { name: "Cook Islands", code: "CK", parentCode: "NZ", parentName: "New Zealand" },
+  { name: "Niue", code: "NU", parentCode: "NZ", parentName: "New Zealand" },
+];
+
+// Find a dependency by input
+export const findDependency = (input, language = "en") => {
+  const normalizedInput = input.toLowerCase().trim();
+
+  // Try exact match first
+  const exactMatch = dependencies.find(
+    (d) =>
+      d.name.toLowerCase() === normalizedInput ||
+      (d.aliases && d.aliases.some((a) => a.toLowerCase() === normalizedInput))
+  );
+
+  if (exactMatch) return exactMatch;
+
+  // Fuzzy matching
+  const SIMILARITY_THRESHOLD = 0.75;
+  const MIN_INPUT_LENGTH = 3;
+
+  if (normalizedInput.length < MIN_INPUT_LENGTH) return null;
+
+  let bestMatch = null;
+  let bestSimilarity = 0;
+
+  for (const dependency of dependencies) {
+    const nameSimilarity = getSimilarity(
+      normalizedInput,
+      dependency.name.toLowerCase()
+    );
+    if (nameSimilarity > bestSimilarity && nameSimilarity >= SIMILARITY_THRESHOLD) {
+      bestSimilarity = nameSimilarity;
+      bestMatch = dependency;
+    }
+
+    if (dependency.aliases) {
+      for (const alias of dependency.aliases) {
+        const aliasSimilarity = getSimilarity(
+          normalizedInput,
+          alias.toLowerCase()
+        );
+        if (aliasSimilarity > bestSimilarity && aliasSimilarity >= SIMILARITY_THRESHOLD) {
+          bestSimilarity = aliasSimilarity;
+          bestMatch = dependency;
+        }
+      }
+    }
+  }
+
+  return bestMatch;
+};
+
+// Get all dependencies for a country
+export const getDependenciesForCountry = (countryCode) => {
+  return dependencies.filter((d) => d.parentCode === countryCode);
 };
