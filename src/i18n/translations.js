@@ -16,6 +16,8 @@ export const translations = {
     wrong: "Wrong!",
     penaltyNote: "(+5s penalty)",
     alreadyGuessed: "Already guessed:",
+    dependencyWarning: "is a dependency, not a country. Can you guess the country?",
+    includesDependencies: "includes:",
 
     // Hint modal
     countryHint: "Country Hint",
@@ -60,6 +62,8 @@ export const translations = {
     wrong: "Faux !",
     penaltyNote: "(+5s de pénalité)",
     alreadyGuessed: "Déjà deviné :",
+    dependencyWarning: "est une dépendance, pas un pays. Pouvez-vous deviner le pays ?",
+    includesDependencies: "inclut :",
 
     // Hint modal
     countryHint: "Indice",

@@ -201,7 +201,7 @@ function Game() {
                 <>✓ {t.correct} {lastGuessStatus.name}</>
               )}
               {lastGuessStatus.type === "correct-with-deps" && (
-                <>✓ {t.correct} {lastGuessStatus.name} (includes: {lastGuessStatus.dependencies})</>
+                <>✓ {t.correct} {lastGuessStatus.name} ({t.includesDependencies} {lastGuessStatus.dependencies})</>
               )}
               {lastGuessStatus.type === "wrong" && (
                 <>✗ {t.wrong} "{lastGuessStatus.input}" {t.penaltyNote}</>
@@ -210,7 +210,7 @@ function Game() {
                 <>⚠ {t.alreadyGuessed} {lastGuessStatus.name}</>
               )}
               {lastGuessStatus.type === "dependency" && (
-                <>⚠ {lastGuessStatus.name} is a dependency, not a country. Can you guess the country?</>
+                <>⚠ {lastGuessStatus.name} {t.dependencyWarning}</>
               )}
             </div>
           )}
