@@ -285,6 +285,43 @@
   border: 1px solid #9b59b6;
 }
 
+.recent-guesses {
+  margin-top: 20px;
+  padding: 15px;
+  background: #1a1a2e;
+  border-radius: 10px;
+  border: 1px solid #333;
+}
+
+.recent-guesses-title {
+  margin: 0 0 12px 0;
+  font-size: 0.9rem;
+  color: #999;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.recent-guesses-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.recent-guess-item {
+  padding: 6px 12px;
+  background: rgba(52, 152, 219, 0.15);
+  color: #3498db;
+  border-radius: 6px;
+  font-size: 0.85rem;
+  border: 1px solid rgba(52, 152, 219, 0.3);
+  transition: all 0.2s ease;
+}
+
+.recent-guess-item:hover {
+  background: rgba(52, 152, 219, 0.25);
+  transform: translateY(-1px);
+}
+
 .continent-progress-container {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));

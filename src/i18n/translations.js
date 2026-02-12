@@ -11,6 +11,7 @@ export const translations = {
     guessButton: "Guess",
     resetButton: "Reset",
     endGameButton: "End Game",
+    recentGuesses: "Recent Guesses",
 
     // Feedback messages
     correct: "Correct!",
@@ -39,6 +40,12 @@ export const translations = {
     continentComplete: "Continent Complete!",
     completedCelebration: "Congratulations! You've guessed all countries in {continent}!",
 
+    // Resume game
+    continueLastGame: "Continue Last Game?",
+    continueGamePrompt: "You have a game in progress. Would you like to continue where you left off?",
+    resumeGame: "Resume Game",
+    startNewGame: "Start New Game",
+
     // Continents
     continents: {
       Africa: "Africa",
@@ -62,6 +69,7 @@ export const translations = {
     guessButton: "Deviner",
     resetButton: "Réinitialiser",
     endGameButton: "Terminer",
+    recentGuesses: "Devinations Récentes",
 
     // Feedback messages
     correct: "Correct !",
@@ -89,6 +97,12 @@ export const translations = {
     // Celebration
     continentComplete: "Continent Terminé !",
     completedCelebration: "Félicitations ! Vous avez deviné tous les pays en {continent} !",
+
+    // Resume game
+    continueLastGame: "Continuer la Dernière Partie ?",
+    continueGamePrompt: "Vous avez une partie en cours. Voulez-vous continuer où vous vous êtes arrêté ?",
+    resumeGame: "Reprendre la Partie",
+    startNewGame: "Nouvelle Partie",
 
     // Continents
     continents: {

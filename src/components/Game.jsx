@@ -24,6 +24,8 @@ function Game() {
   const [celebratedContinents, setCelebratedContinents] = useState(new Set());
   const [currentCelebration, setCurrentCelebration] = useState(null);
   const [streak, setStreak] = useState(0);
+  const [recentGuesses, setRecentGuesses] = useState([]);
+  const [showResumePrompt, setShowResumePrompt] = useState(false);
   const inputRef = useRef(null);
   const timerRef = useRef(null);
   const statusTimerRef = useRef(null);
@@ -76,6 +78,39 @@ function Game() {
     }
   }, [guessedCountries.size]);
 
+  // Load saved game on mount
+  useEffect(() => {
+    const savedGame = localStorage.getItem('countryGuesserSave');
+    if (savedGame) {
+      try {
+        const gameData = JSON.parse(savedGame);
+        // Only show resume prompt if game was in progress (has guessed countries)
+        if (gameData.guessedCountries && gameData.guessedCountries.length > 0) {
+          setShowResumePrompt(true);
+        }
+      } catch (error) {
+        console.error('Failed to load saved game:', error);
+        localStorage.removeItem('countryGuesserSave');
+      }
+    }
+  }, []);
+
+  // Save game state to localStorage when it changes
+  useEffect(() => {
+    // Only save if there are guessed countries and game hasn't ended
+    if (guessedCountries.size > 0 && !showEndModal) {
+      const gameData = {
+        guessedCountries: Array.from(guessedCountries),
+        time,
+        streak,
+        recentGuesses,
+        celebratedContinents: Array.from(celebratedContinents),
+        timestamp: Date.now()
+      };
+      localStorage.setItem('countryGuesserSave', JSON.stringify(gameData));
+    }
+  }, [guessedCountries, time, streak, recentGuesses, celebratedContinents, showEndModal]);
+
   const handleInputChange = (e) => {
     setInputValue(e.target.value);
     if (canClearStatus) {
@@ -118,6 +153,12 @@ function Game() {
           });
 
           setGuessedCountries(newGuessed);
+
+          // Add to recent guesses (keep last 8)
+          setRecentGuesses(prev => {
+            const newRecent = [{ code: country.code, name: getCountryName(country.code) }, ...prev];
+            return newRecent.slice(0, 8);
+          });
 
           // Increment streak for correct guess
           setStreak(prev => prev + 1);
@@ -198,6 +239,31 @@ function Game() {
     inputRef.current?.focus();
   };
 
+  const handleResumeGame = () => {
+    const savedGame = localStorage.getItem('countryGuesserSave');
+    if (savedGame) {
+      try {
+        const gameData = JSON.parse(savedGame);
+        setGuessedCountries(new Set(gameData.guessedCountries || []));
+        setTime(gameData.time || 0);
+        setStreak(gameData.streak || 0);
+        setRecentGuesses(gameData.recentGuesses || []);
+        setCelebratedContinents(new Set(gameData.celebratedContinents || []));
+        setShowResumePrompt(false);
+        inputRef.current?.focus();
+      } catch (error) {
+        console.error('Failed to resume game:', error);
+        setShowResumePrompt(false);
+      }
+    }
+  };
+
+  const handleStartNewGame = () => {
+    localStorage.removeItem('countryGuesserSave');
+    setShowResumePrompt(false);
+    inputRef.current?.focus();
+  };
+
   const handleRestart = () => {
     setGuessedCountries(new Set());
     setHintsUsed(new Set());
@@ -209,8 +275,10 @@ function Game() {
     setLastGuessStatus(null);
     setCanClearStatus(true);
     setStreak(0);
+    setRecentGuesses([]);
     setCelebratedContinents(new Set());
     setCurrentCelebration(null);
+    localStorage.removeItem('countryGuesserSave');
     if (statusTimerRef.current) {
       clearTimeout(statusTimerRef.current);
       statusTimerRef.current = null;
@@ -312,6 +380,19 @@ function Game() {
             </div>
           )}
         </div>
+
+        {recentGuesses.length > 0 && (
+          <div className="recent-guesses">
+            <h3 className="recent-guesses-title">{t.recentGuesses}</h3>
+            <div className="recent-guesses-list">
+              {recentGuesses.map((guess, index) => (
+                <span key={`${guess.code}-${index}`} className="recent-guess-item">
+                  {guess.name}
+                </span>
+              ))}
+            </div>
+          </div>
+        )}
       </div>
 
       <ContinentProgress guessedCountries={guessedCountries} />
@@ -344,6 +425,23 @@ function Game() {
           onClose={handleCloseEndModal}
           onRestart={handleRestart}
         />
+      )}
+
+      {showResumePrompt && (
+        <div className="modal-overlay" onClick={handleStartNewGame}>
+          <div className="modal-content resume-modal" onClick={(e) => e.stopPropagation()}>
+            <h2>{t.continueLastGame}</h2>
+            <p>{t.continueGamePrompt}</p>
+            <div className="modal-buttons">
+              <button className="btn btn-primary" onClick={handleResumeGame}>
+                {t.resumeGame}
+              </button>
+              <button className="btn btn-secondary" onClick={handleStartNewGame}>
+                {t.startNewGame}
+              </button>
+            </div>
+          </div>
+        </div>
       )}
     </div>
   );
