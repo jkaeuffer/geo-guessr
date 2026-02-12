@@ -9,6 +9,7 @@ export const translations = {
     // Form
     inputPlaceholder: "Enter a country name...",
     guessButton: "Guess",
+    resetButton: "Reset",
     endGameButton: "End Game",
 
     // Feedback messages
@@ -34,6 +35,10 @@ export const translations = {
     playAgain: "Play Again",
     close: "Close",
 
+    // Celebration
+    continentComplete: "Continent Complete!",
+    completedCelebration: "Congratulations! You've guessed all countries in {continent}!",
+
     // Continents
     continents: {
       Africa: "Africa",
@@ -55,6 +60,7 @@ export const translations = {
     // Form
     inputPlaceholder: "Entrez un nom de pays...",
     guessButton: "Deviner",
+    resetButton: "Réinitialiser",
     endGameButton: "Terminer",
 
     // Feedback messages
@@ -79,6 +85,10 @@ export const translations = {
     missedCountries: "Pays Manqués",
     playAgain: "Rejouer",
     close: "Fermer",
+
+    // Celebration
+    continentComplete: "Continent Terminé !",
+    completedCelebration: "Félicitations ! Vous avez deviné tous les pays en {continent} !",
 
     // Continents
     continents: {

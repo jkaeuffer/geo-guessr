@@ -191,6 +191,11 @@
   color: #fff;
 }
 
+.btn-reset {
+  background: linear-gradient(135deg, #f39c12, #e67e22);
+  color: #fff;
+}
+
 .btn-primary {
   background: linear-gradient(135deg, #27ae60, #219a52);
   color: #fff;
@@ -446,6 +451,28 @@
 
 .modal-close:hover {
   color: #fff;
+}
+
+.celebration-modal {
+  text-align: center;
+  border: 3px solid;
+  box-shadow: 0 0 30px rgba(255, 255, 255, 0.2);
+}
+
+.celebration-modal h2 {
+  font-size: 2rem;
+  margin-bottom: 20px;
+  animation: celebrationBounce 0.6s ease;
+}
+
+.celebration-modal p {
+  font-size: 1.2rem;
+  color: #ccc;
+}
+
+@keyframes celebrationBounce {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.1); }
 }
 
 .modal-content h2 {

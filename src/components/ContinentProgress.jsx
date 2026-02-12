@@ -26,7 +26,10 @@ function ContinentProgress({ guessedCountries }) {
         return (
           <div key={continent} className="continent-progress">
             <div className="continent-label">
-              <span className="continent-name">{getContinentName(continent)}</span>
+              <span className="continent-name">
+                {getContinentName(continent)}
+                {progress.percentage === 100 && " 🏆"}
+              </span>
               <span className="continent-count">
                 {progress.guessed}/{progress.total}
               </span>

@@ -14,8 +14,10 @@ A fun geography quiz game where you try to name all the countries in the world a
 - **197 countries** to guess from all 6 continents
 - **Interactive world map** - click on countries to get hints
 - **Timer** tracks how long it takes you to complete
+- **Reset button** - restart the game without revealing answers (appears after first guess)
 - **5-second penalty** for wrong guesses
 - **Fuzzy matching** - minor typos are accepted (thanks to Levenshtein distance algorithm)
+- **Continent celebrations** 🎉 - get a celebration modal when you complete an entire continent!
 
 ### 🌐 Multilingual Support
 - **English & French** - toggle between languages using the flag buttons in the top right
@@ -29,6 +31,9 @@ A fun geography quiz game where you try to name all the countries in the world a
 
 ### 📊 Progress Tracking
 - **Real-time progress bars** for each continent
+- **Trophy emoji** 🏆 appears when you complete a continent
+- **Celebration modals** with continent-themed colors that auto-dismiss after 3 seconds
+- **Timer pauses** during celebrations so they don't count against your time
 - **Final score screen** showing your time and completion percentage
 - **Missed countries list** organized by continent with flags
 
@@ -38,7 +43,9 @@ A fun geography quiz game where you try to name all the countries in the world a
 2. **Correct guesses** highlight the country on the map in its continent's color
 3. **Wrong guesses** add a 5-second penalty to your timer
 4. **Click on any country** on the map to get a hint (shows flag and capital)
-5. **Try to guess all 197 countries** as fast as possible!
+5. **Complete entire continents** to unlock celebration modals with special animations
+6. **Use the Reset button** to start over without seeing the answers
+7. **Try to guess all 197 countries** as fast as possible!
 
 ## 📝 License
 

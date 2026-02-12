@@ -2,10 +2,11 @@ import { useState, useEffect, useRef, useCallback } from "react";
 import WorldMap from "./WorldMap";
 import ContinentProgress from "./ContinentProgress";
 import CountryHintModal from "./CountryHintModal";
+import ContinentCompletionModal from "./ContinentCompletionModal";
 import EndGameModal from "./EndGameModal";
 import Timer from "./Timer";
 import LanguageSelector from "./LanguageSelector";
-import { findCountry, countries, findDependency, getDependenciesForCountry } from "../data/countries";
+import { findCountry, countries, findDependency, getDependenciesForCountry, continents, getCountriesByContinent, continentColors } from "../data/countries";
 import { useLanguage } from "../i18n/LanguageContext";
 
 function Game() {
@@ -19,6 +20,8 @@ function Game() {
   const [showEndModal, setShowEndModal] = useState(false);
   const [lastGuessStatus, setLastGuessStatus] = useState(null);
   const [canClearStatus, setCanClearStatus] = useState(true);
+  const [celebratedContinents, setCelebratedContinents] = useState(new Set());
+  const [currentCelebration, setCurrentCelebration] = useState(null);
   const inputRef = useRef(null);
   const timerRef = useRef(null);
   const statusTimerRef = useRef(null);
@@ -82,6 +85,22 @@ function Game() {
 
           setGuessedCountries(newGuessed);
 
+          // Check for continent completion
+          continents.forEach((continent) => {
+            const countriesInContinent = getCountriesByContinent(continent);
+            const guessedInContinent = countriesInContinent.filter(c =>
+              newGuessed.has(c.code)
+            ).length;
+
+            if (guessedInContinent === countriesInContinent.length &&
+                !celebratedContinents.has(continent)) {
+              // Continent just completed!
+              setIsTimerRunning(false); // Pause timer
+              setCurrentCelebration(continent);
+              setCelebratedContinents(prev => new Set([...prev, continent]));
+            }
+          });
+
           if (deps.length > 0) {
             const depNames = deps.map(d => d.name).join(", ");
             setLastGuessStatus({
@@ -130,6 +149,16 @@ function Game() {
     setShowEndModal(true);
   };
 
+  const handleReset = () => {
+    handleRestart();
+  };
+
+  const handleCloseCelebration = () => {
+    setCurrentCelebration(null);
+    setIsTimerRunning(true); // Resume timer
+    inputRef.current?.focus();
+  };
+
   const handleRestart = () => {
     setGuessedCountries(new Set());
     setHintsUsed(new Set());
@@ -140,6 +169,8 @@ function Game() {
     setShowEndModal(false);
     setLastGuessStatus(null);
     setCanClearStatus(true);
+    setCelebratedContinents(new Set());
+    setCurrentCelebration(null);
     if (statusTimerRef.current) {
       clearTimeout(statusTimerRef.current);
       statusTimerRef.current = null;
@@ -185,6 +216,15 @@ function Game() {
           <button type="submit" className="btn btn-guess">
             {t.guessButton}
           </button>
+          {isTimerRunning && (
+            <button
+              type="button"
+              className="btn btn-reset"
+              onClick={handleReset}
+            >
+              {t.resetButton}
+            </button>
+          )}
           <button
             type="button"
             className="btn btn-end"
@@ -229,6 +269,14 @@ function Game() {
         <CountryHintModal
           countryCode={hintCountryCode}
           onClose={() => setHintCountryCode(null)}
+        />
+      )}
+
+      {currentCelebration && (
+        <ContinentCompletionModal
+          continent={currentCelebration}
+          continentColor={continentColors[currentCelebration]}
+          onClose={handleCloseCelebration}
         />
       )}
 
