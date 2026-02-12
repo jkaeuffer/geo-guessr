@@ -22,11 +22,13 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
+.claude/*
 
 # Local task tracking
 tasks.md
 LEARNINGS.md
 SUGGESTIONS.md
+ARCHITECTURE.md
 
 # Test coverage reports
 coverage

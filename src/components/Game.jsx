@@ -1,14 +1,17 @@
 import { useState, useEffect, useRef, useCallback } from "react";
 import confetti from "canvas-confetti";
 import WorldMap from "./WorldMap";
+import USMap from "./USMap";
 import ContinentProgress from "./ContinentProgress";
 import CountryHintModal from "./CountryHintModal";
+import StateHintModal from "./StateHintModal";
 import ContinentCompletionModal from "./ContinentCompletionModal";
 import EndGameModal from "./EndGameModal";
 import Timer from "./Timer";
 import LanguageSelector from "./LanguageSelector";
 import GameModeSelector from "./GameModeSelector";
 import { findCountry, countries, dependencies, findDependency, getDependenciesForCountry, continents, getCountriesByContinent, continentColors } from "../data/countries";
+import { findState, states } from "../data/states";
 import { useLanguage } from "../i18n/LanguageContext";
 
 // Helper function to map game mode to continent name
@@ -24,6 +27,11 @@ const getContinentFromMode = (mode) => {
   return modeMap[mode] || null;
 };
 
+// Helper function to check if US States mode
+const isUSStatesMode = (mode) => {
+  return mode === "us-states";
+};
+
 function Game() {
   const { t, getCountryName, language } = useLanguage();
   const [gameMode, setGameMode] = useState("classic");
@@ -34,6 +42,7 @@ function Game() {
   const [time, setTime] = useState(0);
   const [isTimerRunning, setIsTimerRunning] = useState(false);
   const [hintCountryCode, setHintCountryCode] = useState(null);
+  const [hintStateCode, setHintStateCode] = useState(null);
   const [showEndModal, setShowEndModal] = useState(false);
   const [lastGuessStatus, setLastGuessStatus] = useState(null);
   const [canClearStatus, setCanClearStatus] = useState(true);
@@ -77,21 +86,28 @@ function Game() {
 
   // Confetti effect and auto-end when all active countries are guessed
   useEffect(() => {
-    // Get active countries based on mode
+    // Get active items based on mode
+    const isStatesMode = isUSStatesMode(gameMode);
     const selectedContinent = getContinentFromMode(gameMode);
-    const activeCountries = selectedContinent
-      ? getCountriesByContinent(selectedContinent)
-      : countries;
+
+    const activeCountries = isStatesMode
+      ? []
+      : (selectedContinent ? getCountriesByContinent(selectedContinent) : countries);
+
+    const activeStates = isStatesMode ? states : [];
+    const activeItems = isStatesMode ? activeStates : activeCountries;
 
     // Create Sets for checking completion
     const dependencyCodes = new Set(dependencies.map(d => d.code));
     const activeCountryCodes = new Set(activeCountries.map(c => c.code));
-    const guessedActiveCountries = Array.from(guessedCountries).filter(
-      code => !dependencyCodes.has(code) && activeCountryCodes.has(code)
-    );
+    const activeStateCodes = new Set(activeStates.map(s => s.code));
 
-    // Check if all active countries have been guessed
-    if (guessedActiveCountries.length === activeCountries.length && activeCountries.length > 0 && guessedActiveCountries.length > 0) {
+    const guessedActiveItems = isStatesMode
+      ? Array.from(guessedCountries).filter(code => activeStateCodes.has(code))
+      : Array.from(guessedCountries).filter(code => !dependencyCodes.has(code) && activeCountryCodes.has(code));
+
+    // Check if all active items have been guessed
+    if (guessedActiveItems.length === activeItems.length && activeItems.length > 0 && guessedActiveItems.length > 0) {
       // Trigger confetti celebration
       const duration = 3000;
       const end = Date.now() + duration;
@@ -119,10 +135,9 @@ function Game() {
 
       frame();
 
-      // Auto-end the game for continent modes
+      // Stop timer for continent modes when completed
       if (selectedContinent) {
         setIsTimerRunning(false);
-        setShowEndModal(true);
       }
     }
   }, [guessedCountries, gameMode]);
@@ -149,6 +164,7 @@ function Game() {
     // Only save if there are guessed countries and game hasn't ended
     if (guessedCountries.size > 0 && !showEndModal) {
       const gameData = {
+        gameMode,
         guessedCountries: Array.from(guessedCountries),
         time,
         streak,
@@ -158,7 +174,7 @@ function Game() {
       };
       localStorage.setItem('countryGuesserSave', JSON.stringify(gameData));
     }
-  }, [guessedCountries, time, streak, recentGuesses, celebratedContinents, showEndModal]);
+  }, [gameMode, guessedCountries, time, streak, recentGuesses, celebratedContinents, showEndModal]);
 
   const handleInputChange = (e) => {
     setInputValue(e.target.value);
@@ -186,6 +202,40 @@ function Game() {
         setIsTimerRunning(true);
       }
 
+      // Check if we're in US States mode
+      if (isUSStatesMode(gameMode)) {
+        const state = findState(trimmedInput);
+
+        if (state) {
+          if (guessedCountries.has(state.code)) {
+            setLastGuessStatus({ type: "duplicate", name: state.name });
+          } else {
+            const newGuessed = new Set([...guessedCountries, state.code]);
+            setGuessedCountries(newGuessed);
+
+            // Add to recent guesses (keep last 8)
+            setRecentGuesses(prev => {
+              const newRecent = [{ code: state.code, name: state.name }, ...prev];
+              return newRecent.slice(0, 8);
+            });
+
+            // Increment streak for correct guess
+            setStreak(prev => prev + 1);
+
+            setLastGuessStatus({ type: "correct", name: state.name });
+          }
+        } else {
+          setLastGuessStatus({ type: "wrong", input: trimmedInput });
+          setTime((prev) => prev + 5);
+          // Reset streak on wrong guess
+          setStreak(0);
+        }
+
+        setInputValue("");
+        return;
+      }
+
+      // Original country guessing logic
       const country = findCountry(trimmedInput, language);
 
       if (country) {
@@ -287,6 +337,12 @@ function Game() {
     }
   };
 
+  const handleStateClick = (stateCode) => {
+    if (!guessedCountries.has(stateCode)) {
+      setHintStateCode(stateCode);
+    }
+  };
+
   const handleEndGame = () => {
     setIsTimerRunning(false);
     setShowEndModal(true);
@@ -307,6 +363,9 @@ function Game() {
     if (savedGame) {
       try {
         const gameData = JSON.parse(savedGame);
+        if (gameData.gameMode) {
+          setGameMode(gameData.gameMode);
+        }
         setGuessedCountries(new Set(gameData.guessedCountries || []));
         setTime(gameData.time || 0);
         setStreak(gameData.streak || 0);
@@ -378,17 +437,22 @@ function Game() {
     setShowEndModal(false);
   };
 
-  // Determine which countries to use based on game mode
+  // Determine which items to use based on game mode
+  const isStatesMode = isUSStatesMode(gameMode);
   const selectedContinent = getContinentFromMode(gameMode);
-  const activeCountries = selectedContinent
-    ? getCountriesByContinent(selectedContinent)
-    : countries;
+  const activeCountries = isStatesMode
+    ? []
+    : (selectedContinent ? getCountriesByContinent(selectedContinent) : countries);
 
-  const totalCountries = activeCountries.length;
+  const activeStates = isStatesMode ? states : [];
+  const activeItems = isStatesMode ? activeStates : activeCountries;
+  const totalCountries = activeItems.length;
 
   // Get welcome text based on game mode
   const getWelcomeText = () => {
-    if (gameMode === "timed") {
+    if (isUSStatesMode(gameMode)) {
+      return t.usStatesModeWelcome || "Try to guess all 50 US states!";
+    } else if (gameMode === "timed") {
       return t.timedModeWelcome;
     } else if (selectedContinent) {
       const continentName = t.continents[selectedContinent];
@@ -403,11 +467,12 @@ function Game() {
 
   // Create a Set of active country codes for filtering
   const activeCountryCodes = new Set(activeCountries.map(c => c.code));
+  const activeStateCodes = new Set(activeStates.map(s => s.code));
 
-  // Count only actual countries (not dependencies) that have been guessed and are in active countries
-  const guessedCount = Array.from(guessedCountries).filter(
-    code => !dependencyCodes.has(code) && activeCountryCodes.has(code)
-  ).length;
+  // Count based on mode
+  const guessedCount = isStatesMode
+    ? Array.from(guessedCountries).filter(code => activeStateCodes.has(code)).length
+    : Array.from(guessedCountries).filter(code => !dependencyCodes.has(code) && activeCountryCodes.has(code)).length;
 
   const completionPercentage = Math.round((guessedCount / totalCountries) * 100);
 
@@ -512,16 +577,32 @@ function Game() {
 
       <ContinentProgress guessedCountries={guessedCountries} />
 
-      <WorldMap
-        guessedCountries={guessedCountries}
-        onCountryClick={handleCountryClick}
-        activeHintCountry={hintCountryCode}
-      />
+      {isUSStatesMode(gameMode) ? (
+        <USMap
+          guessedStates={guessedCountries}
+          onStateClick={handleStateClick}
+          activeHintState={hintStateCode}
+        />
+      ) : (
+        <WorldMap
+          guessedCountries={guessedCountries}
+          onCountryClick={handleCountryClick}
+          activeHintCountry={hintCountryCode}
+          selectedContinent={selectedContinent}
+        />
+      )}
 
       {hintCountryCode && (
         <CountryHintModal
           countryCode={hintCountryCode}
           onClose={() => setHintCountryCode(null)}
+        />
+      )}
+
+      {hintStateCode && (
+        <StateHintModal
+          stateCode={hintStateCode}
+          onClose={() => setHintStateCode(null)}
         />
       )}
 

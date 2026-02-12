@@ -79,7 +79,8 @@ describe("Game Component", () => {
       await user.click(screen.getByText("Guess"));
 
       expect(screen.getByText(/Correct!/)).toBeInTheDocument();
-      expect(screen.getByText(/France/)).toBeInTheDocument();
+      // Check that feedback contains both "Correct!" and "France"
+      expect(screen.getByText(/Correct!.*France/)).toBeInTheDocument();
     });
 
     it("should increment score on correct guess", async () => {
@@ -245,7 +246,8 @@ describe("Game Component", () => {
       await user.click(screen.getByText("Guess"));
 
       expect(screen.getByText(/Correct!/)).toBeInTheDocument();
-      expect(screen.getByText(/Australia/)).toBeInTheDocument();
+      // Check that feedback contains both "Correct!" and "Australia"
+      expect(screen.getByText(/Correct!.*Australia/)).toBeInTheDocument();
     });
 
     it("should reject major typos", async () => {
@@ -472,6 +474,104 @@ describe("Game Component", () => {
     });
   });
 
+  describe("continent mode completion", () => {
+    it("should not show end game modal when completing a continent", async () => {
+      const user = userEvent.setup({ advanceTimers: vi.advanceTimersByTime });
+      renderWithLanguageProvider(<Game />);
+
+      // Switch to Oceania mode (smallest continent)
+      const trigger = screen.getByRole("button", { expanded: false });
+      await user.click(trigger);
+      await user.click(screen.getByRole("menuitem", { name: /Oceania/i }));
+
+      // Get all countries in Oceania
+      const oceaniaCountries = getCountriesByContinent("Oceania");
+
+      // Guess all countries in Oceania
+      for (const country of oceaniaCountries) {
+        const input = screen.getByPlaceholderText("Enter a country name...");
+        await user.clear(input);
+        await user.type(input, country.name);
+        await user.click(screen.getByText("Guess"));
+      }
+
+      // Wait for confetti animation
+      await act(async () => {
+        vi.advanceTimersByTime(3000);
+      });
+
+      // End game modal should NOT be shown
+      expect(screen.queryByText("Game Over!")).not.toBeInTheDocument();
+    });
+
+    it("should stop timer when completing a continent", async () => {
+      const user = userEvent.setup({ advanceTimers: vi.advanceTimersByTime });
+      renderWithLanguageProvider(<Game />);
+
+      // Switch to Oceania mode
+      const trigger = screen.getByRole("button", { expanded: false });
+      await user.click(trigger);
+      await user.click(screen.getByRole("menuitem", { name: /Oceania/i }));
+
+      const oceaniaCountries = getCountriesByContinent("Oceania");
+
+      // Guess all countries
+      for (const country of oceaniaCountries) {
+        const input = screen.getByPlaceholderText("Enter a country name...");
+        await user.clear(input);
+        await user.type(input, country.name);
+        await user.click(screen.getByText("Guess"));
+      }
+
+      // Wait for completion modal to appear (timer should pause)
+      await waitFor(() => {
+        expect(screen.getByText(/Congratulations/i)).toBeInTheDocument();
+      });
+
+      const timerElement = document.querySelector(".timer-value");
+      const timeAtCompletion = timerElement?.textContent;
+
+      // Advance time and verify timer hasn't changed
+      act(() => {
+        vi.advanceTimersByTime(5000);
+      });
+
+      expect(document.querySelector(".timer-value")?.textContent).toBe(timeAtCompletion);
+    });
+
+    it("should allow user to manually end game in continent mode after completion", async () => {
+      const user = userEvent.setup({ advanceTimers: vi.advanceTimersByTime });
+      renderWithLanguageProvider(<Game />);
+
+      // Switch to Oceania mode
+      const trigger = screen.getByRole("button", { expanded: false });
+      await user.click(trigger);
+      await user.click(screen.getByRole("menuitem", { name: /Oceania/i }));
+
+      const oceaniaCountries = getCountriesByContinent("Oceania");
+
+      // Guess all countries
+      for (const country of oceaniaCountries) {
+        const input = screen.getByPlaceholderText("Enter a country name...");
+        await user.clear(input);
+        await user.type(input, country.name);
+        await user.click(screen.getByText("Guess"));
+      }
+
+      // Wait for completion
+      await act(async () => {
+        vi.advanceTimersByTime(3000);
+      });
+
+      // End game modal should not be shown yet
+      expect(screen.queryByText("Game Over!")).not.toBeInTheDocument();
+
+      // User can still manually end the game
+      await user.click(screen.getByText("End Game"));
+      expect(screen.getByText("Game Over!")).toBeInTheDocument();
+    });
+  });
+
   describe("case insensitivity", () => {
     it("should accept country names in any case", async () => {
       const user = userEvent.setup({ advanceTimers: vi.advanceTimersByTime });
@@ -497,6 +597,92 @@ describe("Game Component", () => {
       await user.click(screen.getByText("Guess"));
 
       expect(screen.getByText(/Correct!/)).toBeInTheDocument();
+    });
+  });
+
+  describe("game mode persistence", () => {
+    beforeEach(() => {
+      localStorage.clear();
+    });
+
+    afterEach(() => {
+      localStorage.clear();
+    });
+
+    it("should save game mode to localStorage", async () => {
+      const user = userEvent.setup({ advanceTimers: vi.advanceTimersByTime });
+      renderWithLanguageProvider(<Game />);
+
+      // Switch to US States mode
+      const trigger = screen.getByRole("button", { expanded: false });
+      await user.click(trigger);
+      await user.click(screen.getByRole("menuitem", { name: /US States/i }));
+
+      // Make a guess to trigger save
+      await user.type(screen.getByPlaceholderText("Enter a country name..."), "California");
+      await user.click(screen.getByText("Guess"));
+
+      // Check localStorage
+      const savedGame = localStorage.getItem("countryGuesserSave");
+      expect(savedGame).toBeTruthy();
+      const gameData = JSON.parse(savedGame);
+      expect(gameData.gameMode).toBe("us-states");
+    });
+
+    it("should restore game mode when resuming", async () => {
+      const user = userEvent.setup({ advanceTimers: vi.advanceTimersByTime });
+
+      // Set up saved game in US States mode
+      const savedGame = {
+        gameMode: "us-states",
+        guessedCountries: ["CA", "TX"],
+        time: 120,
+        streak: 2,
+        recentGuesses: [
+          { code: "TX", name: "Texas" },
+          { code: "CA", name: "California" }
+        ],
+        celebratedContinents: [],
+        timestamp: Date.now()
+      };
+      localStorage.setItem("countryGuesserSave", JSON.stringify(savedGame));
+
+      // Render component
+      renderWithLanguageProvider(<Game />);
+
+      // Resume game
+      await user.click(screen.getByText("Resume Game"));
+
+      // Verify US States mode is active (check for state-specific count with saved progress)
+      expect(screen.getByText("2 / 50")).toBeInTheDocument();
+    });
+
+    it("should restore continent mode when resuming", async () => {
+      const user = userEvent.setup({ advanceTimers: vi.advanceTimersByTime });
+
+      // Set up saved game in Africa mode
+      const savedGame = {
+        gameMode: "africa",
+        guessedCountries: ["EG", "ZA"],
+        time: 90,
+        streak: 2,
+        recentGuesses: [
+          { code: "ZA", name: "South Africa" },
+          { code: "EG", name: "Egypt" }
+        ],
+        celebratedContinents: [],
+        timestamp: Date.now()
+      };
+      localStorage.setItem("countryGuesserSave", JSON.stringify(savedGame));
+
+      // Render component
+      renderWithLanguageProvider(<Game />);
+
+      // Resume game
+      await user.click(screen.getByText("Resume Game"));
+
+      // Verify Africa mode is active by checking score (2 guessed out of 54 African countries)
+      expect(screen.getByText("2 / 54")).toBeInTheDocument();
     });
   });
 });

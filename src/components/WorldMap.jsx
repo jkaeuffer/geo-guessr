@@ -1,9 +1,19 @@
 import { useEffect, useState, useRef } from "react";
-import { getCountryByCode, continentColors, dependencies } from "../data/countries";
+import { getCountryByCode, continentColors, dependencies, getCountriesByContinent } from "../data/countries";
 
 const WORLD_MAP_URL = "https://cdn.jsdelivr.net/npm/world-atlas@2/countries-110m.json";
 
-function WorldMap({ guessedCountries, onCountryClick, activeHintCountry }) {
+// Continent bounding boxes for auto-zoom (longitude/latitude bounds)
+const continentViewBoxes = {
+  "Africa": { minLon: -20, maxLon: 55, minLat: -35, maxLat: 40 },
+  "Asia": { minLon: 25, maxLon: 150, minLat: -10, maxLat: 80 },
+  "Europe": { minLon: -25, maxLon: 45, minLat: 35, maxLat: 72 },
+  "North America": { minLon: -170, maxLon: -50, minLat: 5, maxLat: 75 },  // Extended south to include Central America
+  "South America": { minLon: -82, maxLon: -35, minLat: -56, maxLat: 13 },
+  "Oceania": { minLon: 110, maxLon: 180, minLat: -50, maxLat: 0 }
+};
+
+function WorldMap({ guessedCountries, onCountryClick, activeHintCountry, selectedContinent }) {
   const [countries, setCountries] = useState([]);
   const [loading, setLoading] = useState(true);
   const [zoom, setZoom] = useState(1);
@@ -31,6 +41,45 @@ function WorldMap({ guessedCountries, onCountryClick, activeHintCountry }) {
     };
     loadMap();
   }, []);
+
+  // Reset zoom/pan when switching between modes
+  useEffect(() => {
+    // Reset to default zoom/pan when mode changes
+    setZoom(1);
+    setPan({ x: 0, y: 0 });
+  }, [selectedContinent]);
+
+  // Helper function to check if a country belongs to selected continent
+  const shouldRenderCountry = (countryCode) => {
+    // If no continent is selected, render all countries (classic/timed mode)
+    if (!selectedContinent) {
+      return true;
+    }
+
+    // If countryCode is null/undefined, still render it (might be a geographic feature)
+    // We'll just show it without making it clickable
+    if (!countryCode) {
+      return true;
+    }
+
+    // Check if it's a regular country
+    const countryData = getCountryByCode(countryCode);
+    if (countryData) {
+      return countryData.continent === selectedContinent;
+    }
+
+    // Check if it's a dependency - use geographic continent for filtering
+    const dependencyData = dependencies.find(d => d.code === countryCode);
+    if (dependencyData) {
+      // Show if it has a geographic continent matching, OR if no geographic continent is set (show all)
+      return dependencyData.geographicContinent ?
+        dependencyData.geographicContinent === selectedContinent :
+        true;
+    }
+
+    // For unknown territories, show them (they're just geographic features)
+    return true;
+  };
 
 const handleCountryClick = (countryCode) => {
     if (!guessedCountries.has(countryCode) && getCountryByCode(countryCode)) {
@@ -149,8 +198,22 @@ const numericToAlpha2 = {
         if (prevCoord && Math.abs(coord[0] - prevCoord[0]) > 180) {
           if (currentSegment.length > 0) {
             const sign = prevCoord[0] > 0 ? 1 : -1;
-            const edgeLat = prevCoord[1] + (coord[1] - prevCoord[1]) *
-              ((sign * 180 - prevCoord[0]) / (coord[0] + sign * 360 - prevCoord[0]));
+            const denominator = coord[0] + sign * 360 - prevCoord[0];
+
+            // Guard against division by zero and undefined coordinates
+            let edgeLat;
+            if (Math.abs(denominator) < 0.0001 ||
+                typeof coord[1] !== 'number' ||
+                typeof prevCoord[1] !== 'number' ||
+                isNaN(coord[1]) ||
+                isNaN(prevCoord[1])) {
+              // Fallback to simple average if calculation would fail
+              edgeLat = (prevCoord[1] + coord[1]) / 2;
+            } else {
+              edgeLat = prevCoord[1] + (coord[1] - prevCoord[1]) *
+                ((sign * 180 - prevCoord[0]) / denominator);
+            }
+
             currentSegment.push([sign * 180, edgeLat]);
             segments.push(currentSegment);
             currentSegment = [[-sign * 180, edgeLat]];
@@ -251,10 +314,23 @@ const numericToAlpha2 = {
     setIsPanning(false);
   };
 
-  const viewBoxWidth = 360 / zoom;
-  const viewBoxHeight = 180 / zoom;
-  const viewBoxX = -180 + (360 - viewBoxWidth) / 2 - (pan.x / 2);
-  const viewBoxY = -90 + (180 - viewBoxHeight) / 2 - (pan.y / 2);
+  // Calculate viewBox based on selected continent or use default zoom/pan
+  let viewBoxX, viewBoxY, viewBoxWidth, viewBoxHeight;
+
+  if (selectedContinent && continentViewBoxes[selectedContinent]) {
+    // Use continent-specific bounding box
+    const bounds = continentViewBoxes[selectedContinent];
+    viewBoxX = bounds.minLon;
+    viewBoxY = -bounds.maxLat;  // Invert Y axis
+    viewBoxWidth = bounds.maxLon - bounds.minLon;
+    viewBoxHeight = bounds.maxLat - bounds.minLat;
+  } else {
+    // Use zoom/pan for classic mode
+    viewBoxWidth = 360 / zoom;
+    viewBoxHeight = 180 / zoom;
+    viewBoxX = -180 + (360 - viewBoxWidth) / 2 - (pan.x / 2);
+    viewBoxY = -90 + (180 - viewBoxHeight) / 2 - (pan.y / 2);
+  }
 
   if (loading) {
     return (
@@ -288,6 +364,12 @@ const numericToAlpha2 = {
 {countries.map((feature, index) => {
           const numericCode = feature.id;
           const countryCode = numericToAlpha2Code(numericCode);
+
+          // Filter countries based on selected continent
+          if (!shouldRenderCountry(countryCode)) {
+            return null;
+          }
+
           const countryData = countryCode ? getCountryByCode(countryCode) : null;
 
           // Check if this is a dependency

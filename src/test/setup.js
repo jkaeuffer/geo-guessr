@@ -1,10 +1,39 @@
 import "@testing-library/jest-dom";
 import { vi } from "vitest";
 
+// Mock WorldMap and USMap to avoid CDN fetches
+vi.mock("../components/WorldMap", () => ({
+  default: function WorldMapMock() {
+    return null;
+  },
+}));
+
+vi.mock("../components/USMap", () => ({
+  default: function USMapMock() {
+    return null;
+  },
+}));
+
 // Mock canvas-confetti to avoid issues in test environment
 vi.mock("canvas-confetti", () => ({
   default: vi.fn(),
 }));
+
+// Mock localStorage with actual in-memory storage
+const localStorageData = {};
+const localStorageMock = {
+  getItem: vi.fn((key) => localStorageData[key] || null),
+  setItem: vi.fn((key, value) => {
+    localStorageData[key] = value;
+  }),
+  removeItem: vi.fn((key) => {
+    delete localStorageData[key];
+  }),
+  clear: vi.fn(() => {
+    Object.keys(localStorageData).forEach(key => delete localStorageData[key]);
+  }),
+};
+global.localStorage = localStorageMock;
 
 // Mock window.matchMedia for components that might use it
 Object.defineProperty(window, "matchMedia", {
@@ -35,4 +64,7 @@ window.IntersectionObserver = MockIntersectionObserver;
 // Reset all mocks after each test
 afterEach(() => {
   vi.clearAllMocks();
+  // Clear localStorage data but keep mock functions
+  Object.keys(localStorageData).forEach(key => delete localStorageData[key]);
 });
+
