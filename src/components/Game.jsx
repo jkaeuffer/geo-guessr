@@ -361,10 +361,11 @@ function Game() {
               </div>
             )}
           </div>
-          <LanguageSelector />
+          <div className="header-settings">
+            <GameModeSelector selectedMode={gameMode} onModeChange={handleModeChange} />
+            <LanguageSelector />
+          </div>
         </header>
-
-        <GameModeSelector selectedMode={gameMode} onModeChange={handleModeChange} />
 
         <p className="welcome-text">
           {gameMode === "classic" ? t.welcomeText : t.timedModeWelcome}
