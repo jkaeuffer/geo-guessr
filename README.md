@@ -47,6 +47,78 @@ A fun geography quiz game where you try to name all the countries in the world a
 6. **Use the Reset button** to start over without seeing the answers
 7. **Try to guess all 197 countries** as fast as possible!
 
+## 🧪 Testing
+
+This project has a comprehensive test suite covering unit tests, integration tests, and component tests.
+
+### Running Tests
+
+```bash
+# Run all tests
+npm test
+
+# Run tests in watch mode (re-runs on file changes)
+npm run test:watch
+
+# Run tests with interactive UI
+npm run test:ui
+
+# Run tests with coverage report
+npm run test:coverage
+```
+
+### Test Structure
+
+```
+src/
+├── data/
+│   └── __tests__/
+│       └── countries.test.js      # Unit tests for country data functions
+├── components/
+│   └── __tests__/
+│       ├── Timer.test.jsx         # Timer component tests
+│       ├── LanguageSelector.test.jsx
+│       ├── ContinentProgress.test.jsx
+│       ├── CountryHintModal.test.jsx
+│       ├── ContinentCompletionModal.test.jsx
+│       ├── EndGameModal.test.jsx
+│       └── Game.test.jsx          # Integration tests for main game
+├── i18n/
+│   └── __tests__/
+│       └── LanguageContext.test.jsx
+└── test/
+    └── setup.js                   # Test configuration and mocks
+```
+
+### Test Coverage
+
+The test suite aims for:
+- **80%+ line coverage**
+- **75%+ branch coverage**
+- **100% coverage** of critical game logic (findCountry, scoring, penalties)
+
+### Testing Technologies
+
+- **Vitest** - Fast Vite-native test runner
+- **@testing-library/react** - React component testing utilities
+- **@testing-library/jest-dom** - Custom matchers for DOM nodes
+- **@testing-library/user-event** - User interaction simulation
+- **jsdom** - DOM implementation for Node.js
+
+### Adding New Tests
+
+When adding new features, follow these patterns:
+
+1. **Component tests**: Place in `src/components/__tests__/ComponentName.test.jsx`
+2. **Utility tests**: Place in the `__tests__` folder next to the source file
+3. **Use the LanguageProvider wrapper** for components that need translation context:
+
+```jsx
+const renderWithLanguageProvider = (component) => {
+  return render(<LanguageProvider>{component}</LanguageProvider>);
+};
+```
+
 ## 📝 License
 
 MIT License - feel free to use this project for learning or build upon it!

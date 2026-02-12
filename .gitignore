@@ -26,3 +26,7 @@ dist-ssr
 # Local task tracking
 tasks.md
 LEARNINGS.md
+SUGGESTIONS.md
+
+# Test coverage reports
+coverage
