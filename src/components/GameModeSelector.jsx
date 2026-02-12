@@ -5,7 +5,13 @@ function GameModeSelector({ selectedMode, onModeChange }) {
 
   const modes = [
     { id: "classic", label: t.modeClassic, icon: "🌍" },
-    { id: "timed", label: t.modeTimed, icon: "⏱️" }
+    { id: "timed", label: t.modeTimed, icon: "⏱️" },
+    { id: "africa", label: t.modeAfrica, icon: "🦁" },
+    { id: "asia", label: t.modeAsia, icon: "🐼" },
+    { id: "europe", label: t.modeEurope, icon: "🏰" },
+    { id: "north-america", label: t.modeNorthAmerica, icon: "🦅" },
+    { id: "south-america", label: t.modeSouthAmerica, icon: "🦜" },
+    { id: "oceania", label: t.modeOceania, icon: "🦘" }
   ];
 
   return (

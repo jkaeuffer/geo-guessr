@@ -11,6 +11,19 @@ import GameModeSelector from "./GameModeSelector";
 import { findCountry, countries, dependencies, findDependency, getDependenciesForCountry, continents, getCountriesByContinent, continentColors } from "../data/countries";
 import { useLanguage } from "../i18n/LanguageContext";
 
+// Helper function to map game mode to continent name
+const getContinentFromMode = (mode) => {
+  const modeMap = {
+    "africa": "Africa",
+    "asia": "Asia",
+    "europe": "Europe",
+    "north-america": "North America",
+    "south-america": "South America",
+    "oceania": "Oceania"
+  };
+  return modeMap[mode] || null;
+};
+
 function Game() {
   const { t, getCountryName, language } = useLanguage();
   const [gameMode, setGameMode] = useState("classic");
@@ -62,9 +75,23 @@ function Game() {
     };
   }, [isTimerRunning, gameMode]);
 
-  // Confetti effect when all countries are guessed
+  // Confetti effect and auto-end when all active countries are guessed
   useEffect(() => {
-    if (guessedCountries.size === countries.length && guessedCountries.size > 0) {
+    // Get active countries based on mode
+    const selectedContinent = getContinentFromMode(gameMode);
+    const activeCountries = selectedContinent
+      ? getCountriesByContinent(selectedContinent)
+      : countries;
+
+    // Create Sets for checking completion
+    const dependencyCodes = new Set(dependencies.map(d => d.code));
+    const activeCountryCodes = new Set(activeCountries.map(c => c.code));
+    const guessedActiveCountries = Array.from(guessedCountries).filter(
+      code => !dependencyCodes.has(code) && activeCountryCodes.has(code)
+    );
+
+    // Check if all active countries have been guessed
+    if (guessedActiveCountries.length === activeCountries.length && activeCountries.length > 0 && guessedActiveCountries.length > 0) {
       // Trigger confetti celebration
       const duration = 3000;
       const end = Date.now() + duration;
@@ -91,8 +118,14 @@ function Game() {
       };
 
       frame();
+
+      // Auto-end the game for continent modes
+      if (selectedContinent) {
+        setIsTimerRunning(false);
+        setShowEndModal(true);
+      }
     }
-  }, [guessedCountries.size]);
+  }, [guessedCountries, gameMode]);
 
   // Load saved game on mount
   useEffect(() => {
@@ -156,6 +189,19 @@ function Game() {
       const country = findCountry(trimmedInput, language);
 
       if (country) {
+        // In continent mode, check if the country belongs to the selected continent
+        if (selectedContinent && country.continent !== selectedContinent) {
+          setLastGuessStatus({
+            type: "wrong-continent",
+            input: trimmedInput,
+            continent: t.continents[selectedContinent]
+          });
+          setTime((prev) => prev + 5);
+          setStreak(0);
+          setInputValue("");
+          return;
+        }
+
         if (guessedCountries.has(country.code)) {
           setLastGuessStatus({ type: "duplicate", name: getCountryName(country.code) });
         } else {
@@ -231,7 +277,7 @@ function Game() {
 
       setInputValue("");
     },
-    [inputValue, isTimerRunning, guessedCountries, language, getCountryName]
+    [inputValue, isTimerRunning, guessedCountries, language, getCountryName, selectedContinent, t]
   );
 
   const handleCountryClick = (countryCode) => {
@@ -331,14 +377,35 @@ function Game() {
     setShowEndModal(false);
   };
 
-  const totalCountries = countries.length;
+  // Determine which countries to use based on game mode
+  const selectedContinent = getContinentFromMode(gameMode);
+  const activeCountries = selectedContinent
+    ? getCountriesByContinent(selectedContinent)
+    : countries;
+
+  const totalCountries = activeCountries.length;
+
+  // Get welcome text based on game mode
+  const getWelcomeText = () => {
+    if (gameMode === "timed") {
+      return t.timedModeWelcome;
+    } else if (selectedContinent) {
+      const continentName = t.continents[selectedContinent];
+      return t.continentModeWelcome.replace("{continent}", continentName);
+    } else {
+      return t.welcomeText;
+    }
+  };
 
   // Create a Set of dependency codes for O(1) lookup
   const dependencyCodes = new Set(dependencies.map(d => d.code));
 
-  // Count only actual countries (not dependencies) that have been guessed
+  // Create a Set of active country codes for filtering
+  const activeCountryCodes = new Set(activeCountries.map(c => c.code));
+
+  // Count only actual countries (not dependencies) that have been guessed and are in active countries
   const guessedCount = Array.from(guessedCountries).filter(
-    code => !dependencyCodes.has(code)
+    code => !dependencyCodes.has(code) && activeCountryCodes.has(code)
   ).length;
 
   const completionPercentage = Math.round((guessedCount / totalCountries) * 100);
@@ -368,7 +435,7 @@ function Game() {
         </header>
 
         <p className="welcome-text">
-          {gameMode === "classic" ? t.welcomeText : t.timedModeWelcome}
+          {getWelcomeText()}
         </p>
 
       <div className="game-controls">
@@ -420,6 +487,9 @@ function Game() {
               )}
               {lastGuessStatus.type === "dependency" && (
                 <>⚠ {lastGuessStatus.name} {t.dependencyWarning}</>
+              )}
+              {lastGuessStatus.type === "wrong-continent" && (
+                <>✗ "{lastGuessStatus.input}" {t.wrongContinent.replace("{continent}", lastGuessStatus.continent)}</>
               )}
             </div>
           )}

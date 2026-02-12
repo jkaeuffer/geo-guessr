@@ -20,6 +20,7 @@ export const translations = {
     alreadyGuessed: "Already guessed:",
     dependencyWarning: "is a dependency, not a country. Can you guess the country?",
     includesDependencies: "includes:",
+    wrongContinent: "is not in {continent}! (+5s penalty)",
 
     // Hint modal
     countryHint: "Country Hint",
@@ -49,7 +50,14 @@ export const translations = {
     // Game modes
     modeClassic: "Classic",
     modeTimed: "Timed",
+    modeAfrica: "Africa",
+    modeAsia: "Asia",
+    modeEurope: "Europe",
+    modeNorthAmerica: "North America",
+    modeSouthAmerica: "South America",
+    modeOceania: "Oceania",
     timedModeWelcome: "Race against the clock! Guess as many countries as you can before time runs out.",
+    continentModeWelcome: "Focus on {continent}! Guess all countries in this continent.",
     confirmModeChange: "Switching modes will restart your current game. Continue?",
 
     // Continents
@@ -84,6 +92,7 @@ export const translations = {
     alreadyGuessed: "Déjà deviné :",
     dependencyWarning: "est une dépendance, pas un pays. Pouvez-vous deviner le pays ?",
     includesDependencies: "inclut :",
+    wrongContinent: "n'est pas en {continent} ! (+5s de pénalité)",
 
     // Hint modal
     countryHint: "Indice",
@@ -113,7 +122,14 @@ export const translations = {
     // Game modes
     modeClassic: "Classique",
     modeTimed: "Chronométré",
+    modeAfrica: "Afrique",
+    modeAsia: "Asie",
+    modeEurope: "Europe",
+    modeNorthAmerica: "Amérique du Nord",
+    modeSouthAmerica: "Amérique du Sud",
+    modeOceania: "Océanie",
     timedModeWelcome: "Course contre la montre ! Devinez autant de pays que possible avant la fin du temps.",
+    continentModeWelcome: "Concentrez-vous sur {continent} ! Devinez tous les pays de ce continent.",
     confirmModeChange: "Changer de mode redémarrera votre partie actuelle. Continuer ?",
 
     // Continents

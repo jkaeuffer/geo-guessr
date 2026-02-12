@@ -67,11 +67,13 @@
 
 .game-mode-selector {
   display: flex;
+  flex-wrap: wrap;
   gap: 6px;
   background: rgba(26, 26, 46, 0.9);
   padding: 6px 10px;
   border-radius: 10px;
   border: 1px solid #333;
+  max-width: 100%;
 }
 
 .mode-btn {
