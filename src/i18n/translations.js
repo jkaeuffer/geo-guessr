@@ -46,6 +46,12 @@ export const translations = {
     resumeGame: "Resume Game",
     startNewGame: "Start New Game",
 
+    // Game modes
+    modeClassic: "Classic",
+    modeTimed: "Timed",
+    timedModeWelcome: "Race against the clock! Guess as many countries as you can before time runs out.",
+    confirmModeChange: "Switching modes will restart your current game. Continue?",
+
     // Continents
     continents: {
       Africa: "Africa",
@@ -103,6 +109,12 @@ export const translations = {
     continueGamePrompt: "Vous avez une partie en cours. Voulez-vous continuer où vous vous êtes arrêté ?",
     resumeGame: "Reprendre la Partie",
     startNewGame: "Nouvelle Partie",
+
+    // Game modes
+    modeClassic: "Classique",
+    modeTimed: "Chronométré",
+    timedModeWelcome: "Course contre la montre ! Devinez autant de pays que possible avant la fin du temps.",
+    confirmModeChange: "Changer de mode redémarrera votre partie actuelle. Continuer ?",
 
     // Continents
     continents: {

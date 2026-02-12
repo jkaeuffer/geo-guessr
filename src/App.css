@@ -59,6 +59,48 @@
   color: #fff;
 }
 
+.game-mode-selector {
+  display: flex;
+  gap: 10px;
+  justify-content: center;
+  margin-bottom: 20px;
+}
+
+.mode-btn {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 12px 24px;
+  background: #1a1a2e;
+  border: 2px solid #444;
+  border-radius: 10px;
+  color: #fff;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.mode-btn:hover {
+  border-color: #3498db;
+  background: rgba(52, 152, 219, 0.1);
+  transform: translateY(-2px);
+}
+
+.mode-btn.active {
+  border-color: #3498db;
+  background: rgba(52, 152, 219, 0.2);
+  box-shadow: 0 0 15px rgba(52, 152, 219, 0.3);
+}
+
+.mode-icon {
+  font-size: 1.3rem;
+}
+
+.mode-label {
+  font-size: 1rem;
+}
+
 .header-stats {
   display: flex;
   align-items: center;

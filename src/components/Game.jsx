@@ -7,11 +7,14 @@ import ContinentCompletionModal from "./ContinentCompletionModal";
 import EndGameModal from "./EndGameModal";
 import Timer from "./Timer";
 import LanguageSelector from "./LanguageSelector";
+import GameModeSelector from "./GameModeSelector";
 import { findCountry, countries, dependencies, findDependency, getDependenciesForCountry, continents, getCountriesByContinent, continentColors } from "../data/countries";
 import { useLanguage } from "../i18n/LanguageContext";
 
 function Game() {
   const { t, getCountryName, language } = useLanguage();
+  const [gameMode, setGameMode] = useState("classic");
+  const [timedModeLimit, setTimedModeLimit] = useState(600); // 10 minutes default
   const [guessedCountries, setGuessedCountries] = useState(new Set());
   const [hintsUsed, setHintsUsed] = useState(new Set());
   const [inputValue, setInputValue] = useState("");
@@ -33,7 +36,20 @@ function Game() {
   useEffect(() => {
     if (isTimerRunning) {
       timerRef.current = setInterval(() => {
-        setTime((prev) => prev + 1);
+        setTime((prev) => {
+          // Timed mode: count down
+          if (gameMode === "timed") {
+            const newTime = prev - 1;
+            if (newTime <= 0) {
+              setIsTimerRunning(false);
+              setShowEndModal(true);
+              return 0;
+            }
+            return newTime;
+          }
+          // Classic mode: count up
+          return prev + 1;
+        });
       }, 1000);
     } else {
       clearInterval(timerRef.current);
@@ -44,7 +60,7 @@ function Game() {
         clearTimeout(statusTimerRef.current);
       }
     };
-  }, [isTimerRunning]);
+  }, [isTimerRunning, gameMode]);
 
   // Confetti effect when all countries are guessed
   useEffect(() => {
@@ -264,11 +280,36 @@ function Game() {
     inputRef.current?.focus();
   };
 
+  const handleModeChange = (newMode) => {
+    if (guessedCountries.size > 0 || isTimerRunning) {
+      // If game is in progress, ask for confirmation
+      if (confirm(t.confirmModeChange)) {
+        setGameMode(newMode);
+        handleRestart();
+        if (newMode === "timed") {
+          setTime(timedModeLimit);
+        }
+      }
+    } else {
+      setGameMode(newMode);
+      if (newMode === "timed") {
+        setTime(timedModeLimit);
+      } else {
+        setTime(0);
+      }
+    }
+  };
+
   const handleRestart = () => {
     setGuessedCountries(new Set());
     setHintsUsed(new Set());
     setInputValue("");
-    setTime(0);
+    // Reset time based on game mode
+    if (gameMode === "timed") {
+      setTime(timedModeLimit);
+    } else {
+      setTime(0);
+    }
     setIsTimerRunning(false);
     setHintCountryCode(null);
     setShowEndModal(false);
@@ -323,8 +364,10 @@ function Game() {
           <LanguageSelector />
         </header>
 
+        <GameModeSelector selectedMode={gameMode} onModeChange={handleModeChange} />
+
         <p className="welcome-text">
-          {t.welcomeText}
+          {gameMode === "classic" ? t.welcomeText : t.timedModeWelcome}
         </p>
 
       <div className="game-controls">
