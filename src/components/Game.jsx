@@ -190,11 +190,12 @@ function Game() {
 
       if (country) {
         // In continent mode, check if the country belongs to the selected continent
-        if (selectedContinent && country.continent !== selectedContinent) {
+        const currentContinent = getContinentFromMode(gameMode);
+        if (currentContinent && country.continent !== currentContinent) {
           setLastGuessStatus({
             type: "wrong-continent",
             input: trimmedInput,
-            continent: t.continents[selectedContinent]
+            continent: t.continents[currentContinent]
           });
           setTime((prev) => prev + 5);
           setStreak(0);
@@ -277,7 +278,7 @@ function Game() {
 
       setInputValue("");
     },
-    [inputValue, isTimerRunning, guessedCountries, language, getCountryName, selectedContinent, t]
+    [inputValue, isTimerRunning, guessedCountries, language, getCountryName, gameMode, t]
   );
 
   const handleCountryClick = (countryCode) => {
