@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef, useCallback } from "react";
+import confetti from "canvas-confetti";
 import WorldMap from "./WorldMap";
 import ContinentProgress from "./ContinentProgress";
 import CountryHintModal from "./CountryHintModal";
@@ -6,7 +7,7 @@ import ContinentCompletionModal from "./ContinentCompletionModal";
 import EndGameModal from "./EndGameModal";
 import Timer from "./Timer";
 import LanguageSelector from "./LanguageSelector";
-import { findCountry, countries, findDependency, getDependenciesForCountry, continents, getCountriesByContinent, continentColors } from "../data/countries";
+import { findCountry, countries, dependencies, findDependency, getDependenciesForCountry, continents, getCountriesByContinent, continentColors } from "../data/countries";
 import { useLanguage } from "../i18n/LanguageContext";
 
 function Game() {
@@ -22,6 +23,7 @@ function Game() {
   const [canClearStatus, setCanClearStatus] = useState(true);
   const [celebratedContinents, setCelebratedContinents] = useState(new Set());
   const [currentCelebration, setCurrentCelebration] = useState(null);
+  const [streak, setStreak] = useState(0);
   const inputRef = useRef(null);
   const timerRef = useRef(null);
   const statusTimerRef = useRef(null);
@@ -41,6 +43,38 @@ function Game() {
       }
     };
   }, [isTimerRunning]);
+
+  // Confetti effect when all countries are guessed
+  useEffect(() => {
+    if (guessedCountries.size === countries.length && guessedCountries.size > 0) {
+      // Trigger confetti celebration
+      const duration = 3000;
+      const end = Date.now() + duration;
+
+      const frame = () => {
+        confetti({
+          particleCount: 3,
+          angle: 60,
+          spread: 55,
+          origin: { x: 0 },
+          colors: ['#3498db', '#e74c3c', '#f39c12', '#2ecc71', '#9b59b6', '#1abc9c']
+        });
+        confetti({
+          particleCount: 3,
+          angle: 120,
+          spread: 55,
+          origin: { x: 1 },
+          colors: ['#3498db', '#e74c3c', '#f39c12', '#2ecc71', '#9b59b6', '#1abc9c']
+        });
+
+        if (Date.now() < end) {
+          requestAnimationFrame(frame);
+        }
+      };
+
+      frame();
+    }
+  }, [guessedCountries.size]);
 
   const handleInputChange = (e) => {
     setInputValue(e.target.value);
@@ -84,6 +118,9 @@ function Game() {
           });
 
           setGuessedCountries(newGuessed);
+
+          // Increment streak for correct guess
+          setStreak(prev => prev + 1);
 
           // Check for continent completion
           continents.forEach((continent) => {
@@ -130,6 +167,8 @@ function Game() {
         } else {
           setLastGuessStatus({ type: "wrong", input: trimmedInput });
           setTime((prev) => prev + 5);
+          // Reset streak on wrong guess
+          setStreak(0);
         }
       }
 
@@ -169,6 +208,7 @@ function Game() {
     setShowEndModal(false);
     setLastGuessStatus(null);
     setCanClearStatus(true);
+    setStreak(0);
     setCelebratedContinents(new Set());
     setCurrentCelebration(null);
     if (statusTimerRef.current) {
@@ -183,11 +223,19 @@ function Game() {
   };
 
   const totalCountries = countries.length;
-  const guessedCount = guessedCountries.size;
+
+  // Create a Set of dependency codes for O(1) lookup
+  const dependencyCodes = new Set(dependencies.map(d => d.code));
+
+  // Count only actual countries (not dependencies) that have been guessed
+  const guessedCount = Array.from(guessedCountries).filter(
+    code => !dependencyCodes.has(code)
+  ).length;
+
+  const completionPercentage = Math.round((guessedCount / totalCountries) * 100);
 
   return (
     <div className="game">
-      <LanguageSelector />
       <header className="game-header">
           <h1>{t.appTitle}</h1>
           <div className="header-stats">
@@ -195,7 +243,16 @@ function Game() {
             <div className="score">
               {guessedCount} / {totalCountries}
             </div>
+            <div className="completion-percentage">
+              {completionPercentage}%
+            </div>
+            {streak > 0 && (
+              <div className="streak-counter">
+                🔥 {streak}
+              </div>
+            )}
           </div>
+          <LanguageSelector />
         </header>
 
         <p className="welcome-text">
