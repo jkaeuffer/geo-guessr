@@ -1,4 +1,4 @@
-import { useEffect, useState, useRef } from "react";
+import { useEffect, useState, useRef, useCallback } from "react";
 import { getStateByCode, regionColors } from "../data/states";
 
 // Use Albers USA projection for better visual representation
@@ -101,7 +101,7 @@ function USMap({ guessedStates, onStateClick, activeHintState }) {
     setPan({ x: 0, y: 0 });
   };
 
-  const handleWheel = (e) => {
+  const handleWheel = useCallback((e) => {
     e.preventDefault();
     if (e.deltaY < 0) {
       setZoom((prev) => Math.min(prev * 1.2, MAX_ZOOM));
@@ -114,7 +114,15 @@ function USMap({ guessedStates, onStateClick, activeHintState }) {
         return newZoom;
       });
     }
-  };
+  }, []);
+
+  // Attach wheel listener with { passive: false } to allow preventDefault
+  useEffect(() => {
+    const svg = svgRef.current;
+    if (!svg) return;
+    svg.addEventListener("wheel", handleWheel, { passive: false });
+    return () => svg.removeEventListener("wheel", handleWheel);
+  }, [handleWheel]);
 
   // Pan controls
   const handleMouseDown = (e) => {
@@ -178,7 +186,6 @@ function USMap({ guessedStates, onStateClick, activeHintState }) {
         className="world-map"
         xmlns="http://www.w3.org/2000/svg"
         preserveAspectRatio="xMidYMid meet"
-        onWheel={handleWheel}
         onMouseDown={handleMouseDown}
         onMouseMove={handleMouseMove}
         onMouseUp={handleMouseUp}

@@ -1,12 +1,15 @@
 import { LanguageProvider } from "./i18n/LanguageContext";
+import { ThemeProvider } from "./i18n/ThemeContext";
 import Game from "./components/Game";
 import "./App.css";
 
 function App() {
   return (
-    <LanguageProvider>
-      <Game />
-    </LanguageProvider>
+    <ThemeProvider>
+      <LanguageProvider>
+        <Game />
+      </LanguageProvider>
+    </ThemeProvider>
   );
 }
 

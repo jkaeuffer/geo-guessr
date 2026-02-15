@@ -221,7 +221,7 @@ describe("GameModeSelector Component", () => {
       await user.click(screen.getByRole("button", { expanded: false }));
 
       const menuItems = screen.getAllByRole("menuitem");
-      expect(menuItems).toHaveLength(9); // Updated for US States mode
+      expect(menuItems).toHaveLength(10); // Updated for US States Shapes mode
     });
   });
 

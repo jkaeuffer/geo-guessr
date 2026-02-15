@@ -3,14 +3,91 @@
   line-height: 1.5;
   font-weight: 400;
 
-  color-scheme: light dark;
-  color: rgba(255, 255, 255, 0.87);
-  background-color: #242424;
-
   font-synthesis: none;
   text-rendering: optimizeLegibility;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+
+  /* Page */
+  --bg-page: #f5f6fa;
+  --text-primary: #2c3e50;
+
+  /* Surfaces */
+  --surface-primary: #ffffff;
+  --surface-secondary: #f0f1f5;
+  --surface-dropdown: #ffffff;
+  --surface-timer: #e8e9ed;
+  --surface-overlay: rgba(0, 0, 0, 0.5);
+  --surface-modal-overlay: rgba(0, 0, 0, 0.4);
+
+  /* Text */
+  --text-heading: #1a1a2e;
+  --text-secondary: #555;
+  --text-muted: #777;
+  --text-subtle: #888;
+  --text-disabled: #999;
+
+  /* Borders */
+  --border-primary: #ddd;
+  --border-secondary: #ccc;
+  --border-input: #bbb;
+
+  /* Shadows */
+  --shadow: rgba(0, 0, 0, 0.1);
+  --shadow-dropdown: rgba(0, 0, 0, 0.15);
+  --shadow-celebration: rgba(0, 0, 0, 0.1);
+
+  /* Map */
+  --map-unguessed: #bdc3c7;
+  --map-hover: #95a5a6;
+  --map-stroke: #ffffff;
+
+  /* Buttons */
+  --btn-secondary-bg: #e0e0e0;
+  --btn-secondary-text: #333;
+  --btn-base-bg: #f0f0f0;
+
+  /* Progress */
+  --progress-track: #e0e0e0;
+
+  color: var(--text-primary);
+  background-color: var(--bg-page);
+}
+
+[data-theme="dark"] {
+  --bg-page: #242424;
+  --text-primary: rgba(255, 255, 255, 0.87);
+
+  --surface-primary: rgba(26, 26, 46, 0.9);
+  --surface-secondary: #242438;
+  --surface-dropdown: rgba(26, 26, 46, 0.98);
+  --surface-timer: #333;
+  --surface-overlay: rgba(0, 0, 0, 0.5);
+  --surface-modal-overlay: rgba(0, 0, 0, 0.8);
+
+  --text-heading: #fff;
+  --text-secondary: #ccc;
+  --text-muted: #aaa;
+  --text-subtle: #999;
+  --text-disabled: #888;
+
+  --border-primary: #333;
+  --border-secondary: #444;
+  --border-input: #444;
+
+  --shadow: rgba(0, 0, 0, 0.3);
+  --shadow-dropdown: rgba(0, 0, 0, 0.6);
+  --shadow-celebration: rgba(255, 255, 255, 0.2);
+
+  --map-unguessed: #2c3e50;
+  --map-hover: #34495e;
+  --map-stroke: #1a1a2e;
+
+  --btn-secondary-bg: #444;
+  --btn-secondary-text: #fff;
+  --btn-base-bg: #1a1a1a;
+
+  --progress-track: #333;
 }
 
 a {
@@ -44,7 +121,7 @@ button {
   font-size: 1em;
   font-weight: 500;
   font-family: inherit;
-  background-color: #1a1a1a;
+  background-color: var(--btn-base-bg);
   cursor: pointer;
   transition: border-color 0.25s;
 }
@@ -54,17 +131,4 @@ button:hover {
 button:focus,
 button:focus-visible {
   outline: 4px auto -webkit-focus-ring-color;
-}
-
-@media (prefers-color-scheme: light) {
-  :root {
-    color: #213547;
-    background-color: #ffffff;
-  }
-  a:hover {
-    color: #747bff;
-  }
-  button {
-    background-color: #f9f9f9;
-  }
 }

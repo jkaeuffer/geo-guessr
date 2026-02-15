@@ -1,12 +1,13 @@
 import { continents, getCountriesByContinent } from "../data/countries";
 import { useLanguage } from "../i18n/LanguageContext";
 
-function EndGameModal({ guessedCountries, totalTime, onClose, onRestart }) {
+function EndGameModal({ guessedCountries, totalTime, onClose, onRestart, selectedContinent }) {
   const { t, getCountryName, getContinentName } = useLanguage();
 
   const getMissedCountries = () => {
     const missed = [];
-    continents.forEach((continent) => {
+    const activeContinents = selectedContinent ? [selectedContinent] : continents;
+    activeContinents.forEach((continent) => {
       const countriesInContinent = getCountriesByContinent(continent);
       const missedInContinent = countriesInContinent.filter(
         (c) => !guessedCountries.has(c.code)
@@ -28,7 +29,8 @@ function EndGameModal({ guessedCountries, totalTime, onClose, onRestart }) {
   };
 
   const missedByContinent = getMissedCountries();
-  const totalCountries = continents.reduce(
+  const activeContinents = selectedContinent ? [selectedContinent] : continents;
+  const totalCountries = activeContinents.reduce(
     (acc, continent) => acc + getCountriesByContinent(continent).length,
     0
   );

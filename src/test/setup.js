@@ -14,6 +14,12 @@ vi.mock("../components/USMap", () => ({
   },
 }));
 
+vi.mock("../components/StateShapeViewer", () => ({
+  default: function StateShapeViewerMock({ stateCode, currentIndex, totalStates }) {
+    return null;
+  },
+}));
+
 // Mock canvas-confetti to avoid issues in test environment
 vi.mock("canvas-confetti", () => ({
   default: vi.fn(),

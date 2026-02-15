@@ -1,4 +1,4 @@
-import { useEffect, useState, useRef } from "react";
+import { useEffect, useState, useRef, useCallback } from "react";
 import { getCountryByCode, continentColors, dependencies, getCountriesByContinent } from "../data/countries";
 
 const WORLD_MAP_URL = "https://cdn.jsdelivr.net/npm/world-atlas@2/countries-110m.json";
@@ -275,7 +275,7 @@ const numericToAlpha2 = {
     setPan({ x: 0, y: 0 });
   };
 
-  const handleWheel = (e) => {
+  const handleWheel = useCallback((e) => {
     e.preventDefault();
     if (e.deltaY < 0) {
       setZoom((prev) => Math.min(prev * 1.2, MAX_ZOOM));
@@ -288,7 +288,15 @@ const numericToAlpha2 = {
         return newZoom;
       });
     }
-  };
+  }, []);
+
+  // Attach wheel listener with { passive: false } to allow preventDefault
+  useEffect(() => {
+    const svg = svgRef.current;
+    if (!svg) return;
+    svg.addEventListener("wheel", handleWheel, { passive: false });
+    return () => svg.removeEventListener("wheel", handleWheel);
+  }, [handleWheel]);
 
   const handleMouseDown = (e) => {
     if (zoom > 1) {
@@ -354,7 +362,6 @@ const numericToAlpha2 = {
         className="world-map"
         xmlns="http://www.w3.org/2000/svg"
         preserveAspectRatio="xMidYMid meet"
-        onWheel={handleWheel}
         onMouseDown={handleMouseDown}
         onMouseMove={handleMouseMove}
         onMouseUp={handleMouseUp}

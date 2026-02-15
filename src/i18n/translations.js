@@ -56,9 +56,18 @@ export const translations = {
     modeNorthAmerica: "North America",
     modeSouthAmerica: "South America",
     modeOceania: "Oceania",
+    modeUSStatesShapes: "US States Shapes",
     timedModeWelcome: "Race against the clock! Guess as many countries as you can before time runs out.",
     continentModeWelcome: "Focus on {continent}! Guess all countries in this continent.",
+    usStatesShapesModeWelcome: "Guess each US state from its shape alone!",
     confirmModeChange: "Switching modes will restart your current game. Continue?",
+
+    // Hints
+    giveHint: "Give me a hint",
+
+    // Theme
+    switchToLight: "Switch to light mode",
+    switchToDark: "Switch to dark mode",
 
     // Continents
     continents: {
@@ -128,9 +137,18 @@ export const translations = {
     modeNorthAmerica: "Amérique du Nord",
     modeSouthAmerica: "Amérique du Sud",
     modeOceania: "Océanie",
+    modeUSStatesShapes: "Formes des États US",
     timedModeWelcome: "Course contre la montre ! Devinez autant de pays que possible avant la fin du temps.",
     continentModeWelcome: "Concentrez-vous sur {continent} ! Devinez tous les pays de ce continent.",
+    usStatesShapesModeWelcome: "Devinez chaque état américain à partir de sa forme !",
     confirmModeChange: "Changer de mode redémarrera votre partie actuelle. Continuer ?",
+
+    // Hints
+    giveHint: "Un indice",
+
+    // Theme
+    switchToLight: "Passer en mode clair",
+    switchToDark: "Passer en mode sombre",
 
     // Continents
     continents: {

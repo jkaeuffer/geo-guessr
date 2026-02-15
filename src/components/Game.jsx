@@ -2,6 +2,7 @@ import { useState, useEffect, useRef, useCallback } from "react";
 import confetti from "canvas-confetti";
 import WorldMap from "./WorldMap";
 import USMap from "./USMap";
+import StateShapeViewer from "./StateShapeViewer";
 import ContinentProgress from "./ContinentProgress";
 import CountryHintModal from "./CountryHintModal";
 import StateHintModal from "./StateHintModal";
@@ -9,9 +10,11 @@ import ContinentCompletionModal from "./ContinentCompletionModal";
 import EndGameModal from "./EndGameModal";
 import Timer from "./Timer";
 import LanguageSelector from "./LanguageSelector";
+import ThemeToggle from "./ThemeToggle";
 import GameModeSelector from "./GameModeSelector";
 import { findCountry, countries, dependencies, findDependency, getDependenciesForCountry, continents, getCountriesByContinent, continentColors } from "../data/countries";
 import { findState, states } from "../data/states";
+import { getHintForState } from "../data/stateHints";
 import { useLanguage } from "../i18n/LanguageContext";
 
 // Helper function to map game mode to continent name
@@ -27,9 +30,14 @@ const getContinentFromMode = (mode) => {
   return modeMap[mode] || null;
 };
 
-// Helper function to check if US States mode
+// Helper function to check if US States mode (includes shapes mode)
 const isUSStatesMode = (mode) => {
-  return mode === "us-states";
+  return mode === "us-states" || mode === "us-states-shapes";
+};
+
+// Helper function to check if US States Shapes mode specifically
+const isUSStatesShapesMode = (mode) => {
+  return mode === "us-states-shapes";
 };
 
 function Game() {
@@ -51,6 +59,9 @@ function Game() {
   const [streak, setStreak] = useState(0);
   const [recentGuesses, setRecentGuesses] = useState([]);
   const [showResumePrompt, setShowResumePrompt] = useState(false);
+  const [shapeOrder, setShapeOrder] = useState([]);
+  const [currentShapeIndex, setCurrentShapeIndex] = useState(0);
+  const [shapeHintLevel, setShapeHintLevel] = useState(0);
   const inputRef = useRef(null);
   const timerRef = useRef(null);
   const statusTimerRef = useRef(null);
@@ -170,11 +181,25 @@ function Game() {
         streak,
         recentGuesses,
         celebratedContinents: Array.from(celebratedContinents),
-        timestamp: Date.now()
+        timestamp: Date.now(),
+        ...(isUSStatesShapesMode(gameMode) && { shapeOrder, currentShapeIndex, shapeHintLevel })
       };
       localStorage.setItem('countryGuesserSave', JSON.stringify(gameData));
     }
   }, [gameMode, guessedCountries, time, streak, recentGuesses, celebratedContinents, showEndModal]);
+
+  // Shuffle states when entering shapes mode
+  useEffect(() => {
+    if (isUSStatesShapesMode(gameMode) && shapeOrder.length === 0) {
+      const codes = states.map(s => s.code);
+      for (let i = codes.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [codes[i], codes[j]] = [codes[j], codes[i]];
+      }
+      setShapeOrder(codes);
+      setCurrentShapeIndex(0);
+    }
+  }, [gameMode]);
 
   const handleInputChange = (e) => {
     setInputValue(e.target.value);
@@ -200,6 +225,40 @@ function Game() {
 
       if (!isTimerRunning) {
         setIsTimerRunning(true);
+      }
+
+      // Check if we're in US States Shapes mode
+      if (isUSStatesShapesMode(gameMode)) {
+        const state = findState(trimmedInput);
+        const currentStateCode = shapeOrder[currentShapeIndex];
+
+        if (state && state.code === currentStateCode) {
+          const newGuessed = new Set([...guessedCountries, state.code]);
+          setGuessedCountries(newGuessed);
+
+          setRecentGuesses(prev => {
+            const newRecent = [{ code: state.code, name: state.name }, ...prev];
+            return newRecent.slice(0, 8);
+          });
+
+          setStreak(prev => prev + 1);
+          setLastGuessStatus({ type: "correct", name: state.name });
+
+          // Advance to next unguessed state
+          let nextIndex = currentShapeIndex + 1;
+          while (nextIndex < shapeOrder.length && newGuessed.has(shapeOrder[nextIndex])) {
+            nextIndex++;
+          }
+          setCurrentShapeIndex(nextIndex);
+          setShapeHintLevel(0);
+        } else {
+          setLastGuessStatus({ type: "wrong", input: trimmedInput });
+          setTime((prev) => prev + 5);
+          setStreak(0);
+        }
+
+        setInputValue("");
+        return;
       }
 
       // Check if we're in US States mode
@@ -328,7 +387,7 @@ function Game() {
 
       setInputValue("");
     },
-    [inputValue, isTimerRunning, guessedCountries, language, getCountryName, gameMode, t]
+    [inputValue, isTimerRunning, guessedCountries, language, getCountryName, gameMode, t, shapeOrder, currentShapeIndex]
   );
 
   const handleCountryClick = (countryCode) => {
@@ -346,6 +405,10 @@ function Game() {
   const handleEndGame = () => {
     setIsTimerRunning(false);
     setShowEndModal(true);
+  };
+
+  const handleShapeHint = () => {
+    setShapeHintLevel(prev => Math.min(prev + 1, 6));
   };
 
   const handleReset = () => {
@@ -371,6 +434,11 @@ function Game() {
         setStreak(gameData.streak || 0);
         setRecentGuesses(gameData.recentGuesses || []);
         setCelebratedContinents(new Set(gameData.celebratedContinents || []));
+        if (gameData.shapeOrder) {
+          setShapeOrder(gameData.shapeOrder);
+          setCurrentShapeIndex(gameData.currentShapeIndex || 0);
+          setShapeHintLevel(gameData.shapeHintLevel || 0);
+        }
         setShowResumePrompt(false);
         inputRef.current?.focus();
       } catch (error) {
@@ -425,6 +493,9 @@ function Game() {
     setRecentGuesses([]);
     setCelebratedContinents(new Set());
     setCurrentCelebration(null);
+    setShapeOrder([]);
+    setCurrentShapeIndex(0);
+    setShapeHintLevel(0);
     localStorage.removeItem('countryGuesserSave');
     if (statusTimerRef.current) {
       clearTimeout(statusTimerRef.current);
@@ -450,7 +521,9 @@ function Game() {
 
   // Get welcome text based on game mode
   const getWelcomeText = () => {
-    if (isUSStatesMode(gameMode)) {
+    if (isUSStatesShapesMode(gameMode)) {
+      return t.usStatesShapesModeWelcome || "Guess each US state from its shape alone!";
+    } else if (isUSStatesMode(gameMode)) {
       return t.usStatesModeWelcome || "Try to guess all 50 US states!";
     } else if (gameMode === "timed") {
       return t.timedModeWelcome;
@@ -495,8 +568,12 @@ function Game() {
             )}
           </div>
           <div className="header-settings">
-            <GameModeSelector selectedMode={gameMode} onModeChange={handleModeChange} />
+            <GameModeSelector
+              selectedMode={gameMode}
+              onModeChange={handleModeChange}
+            />
             <LanguageSelector />
+            <ThemeToggle />
           </div>
         </header>
 
@@ -561,6 +638,29 @@ function Game() {
           )}
         </div>
 
+        {isUSStatesShapesMode(gameMode) && isTimerRunning && (
+          <div className="shape-hints-area">
+            {shapeHintLevel > 0 && (
+              <div className="shape-hints-list">
+                {Array.from({ length: shapeHintLevel }, (_, i) => {
+                  const hint = getHintForState(shapeOrder[currentShapeIndex], i + 1);
+                  if (!hint) return null;
+                  return (
+                    <div key={i} className="shape-hint-item">
+                      <span className="hint-label">{hint.label}:</span> {hint.value}
+                    </div>
+                  );
+                })}
+              </div>
+            )}
+            {shapeHintLevel < 6 && (
+              <button className="btn btn-hint" onClick={handleShapeHint} type="button">
+                {t.giveHint || "Give me a hint"}
+              </button>
+            )}
+          </div>
+        )}
+
         {recentGuesses.length > 0 && (
           <div className="recent-guesses">
             <h3 className="recent-guesses-title">{t.recentGuesses}</h3>
@@ -575,9 +675,17 @@ function Game() {
         )}
       </div>
 
-      <ContinentProgress guessedCountries={guessedCountries} />
+      {!isUSStatesMode(gameMode) && !selectedContinent && (
+        <ContinentProgress guessedCountries={guessedCountries} />
+      )}
 
-      {isUSStatesMode(gameMode) ? (
+      {isUSStatesShapesMode(gameMode) ? (
+        <StateShapeViewer
+          stateCode={shapeOrder[currentShapeIndex]}
+          currentIndex={currentShapeIndex + 1}
+          totalStates={states.length}
+        />
+      ) : isUSStatesMode(gameMode) ? (
         <USMap
           guessedStates={guessedCountries}
           onStateClick={handleStateClick}
@@ -620,6 +728,7 @@ function Game() {
           totalTime={time}
           onClose={handleCloseEndModal}
           onRestart={handleRestart}
+          selectedContinent={selectedContinent}
         />
       )}
 

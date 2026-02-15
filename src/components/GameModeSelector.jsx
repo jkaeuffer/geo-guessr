@@ -10,6 +10,7 @@ function GameModeSelector({ selectedMode, onModeChange }) {
     { id: "classic", label: t.modeClassic, icon: "🌍" },
     { id: "timed", label: t.modeTimed, icon: "⏱️" },
     { id: "us-states", label: t.modeUSStates || "US States", icon: "🇺🇸" },
+    { id: "us-states-shapes", label: t.modeUSStatesShapes || "US States Shapes", icon: "🧩" },
     { id: "africa", label: t.modeAfrica, icon: "🦁" },
     { id: "asia", label: t.modeAsia, icon: "🐼" },
     { id: "europe", label: t.modeEurope, icon: "🏰" },
